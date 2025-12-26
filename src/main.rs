@@ -1,3 +1,5 @@
+mod registers;
+
 use std::{fs::File, io::{Error, Read}};
 
 fn main() -> Result<(), Error> {
