@@ -1,6 +1,6 @@
 #[derive(Debug, Default)]
 #[allow(unused)]
-pub(crate) struct Registers {
+pub(super) struct Registers {
     pub a: u8,
     pub b: u8,
     pub c: u8,
