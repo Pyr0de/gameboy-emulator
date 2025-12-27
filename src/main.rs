@@ -1,4 +1,5 @@
 mod registers;
+mod memory_mapping;
 
 use std::{fs::File, io::{Error, Read}};
 
