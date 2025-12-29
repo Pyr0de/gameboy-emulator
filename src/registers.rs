@@ -13,6 +13,17 @@ pub(super) struct Registers {
     pub pc: u16,
 }
 
+pub(crate) enum Flags {
+    /// Zero flag
+    Z = 0x80,
+    /// Subtraction flag
+    N = 0x40,
+    /// Half carry flag
+    H = 0x20,
+    /// Carry flag
+    CY = 0x10,
+}
+
 #[allow(dead_code)]
 impl Registers {
     pub fn new() -> Self {
@@ -24,21 +35,8 @@ impl Registers {
         }
     }
 
-    /// Reads zero flag - register F bit 7
-    pub fn get_flag_z(&self) -> bool {
-        self.f & 0x80 > 0
-    }
-    /// Reads subtraction flag - register F bit 6
-    pub fn get_flag_n(&self) -> bool {
-        self.f & 0x40 > 0
-    }
-    /// Reads half carry flag - register F bit 5
-    pub fn get_flag_h(&self) -> bool {
-        self.f & 0x20 > 0
-    }
-    /// Reads carry flag - register F bit 4
-    pub fn get_flag_cy(&self) -> bool {
-        self.f & 0x10 > 0
+    pub fn get_flag(&self, flag: Flags) -> bool {
+        self.f & (flag as u8) > 0
     }
 
     pub fn get_bc(&self) -> u16 {
@@ -66,5 +64,52 @@ impl Registers {
     pub fn set_hl(&mut self, hl: u16) {
         self.h = (hl >> 8) as u8;
         self.l = (hl & 0xFF) as u8;
+    }
+}
+
+pub struct ALU;
+
+impl ALU {
+    pub(crate) fn add(a: &mut u8, b: u8, carry: bool, flag_reg: &mut u8) {
+        let mut flag: u8 = 0;
+        let (res, cy) = a.carrying_add(b, carry);
+
+        let hc = (((*a & 0xF) + (b & 0xF)) & 0x10) == 0x10;
+        println!("{hc}");
+
+        if hc {
+            flag |= Flags::H as u8;
+        }
+        if cy {
+            flag |= Flags::CY as u8;
+        }
+        if res == 0 {
+            flag |= Flags::Z as u8;
+        }
+
+        
+        *a = res;
+        *flag_reg = flag;
+    }
+    pub(crate) fn sub(a: &mut u8, b: u8, carry: bool) {
+        
+    }
+}
+
+#[allow(non_snake_case)]
+mod ALU_test {
+    use crate::registers::{ALU, Flags, Registers};
+
+    #[test]
+    fn add() {
+        let mut reg = Registers::default();
+        ALU::add(&mut reg.a, 3, false, &mut reg.f);
+        assert_eq!(reg.f, 0);
+
+        reg.a = 255;
+        reg.f = ALU::add(&mut reg.a, 1, false);
+        assert_eq!(reg.f, Flags::Z as u8 | Flags::CY as u8 | Flags::H as u8);
+
+        reg.f = ALU::add(&mut reg.a, 255, carry)
     }
 }
