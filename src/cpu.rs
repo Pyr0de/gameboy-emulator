@@ -20,6 +20,7 @@ impl CPU {
                 self.registers.set_bc(data);
             }
             0x02 => self.registers.a = memory[self.registers.get_bc()],
+            0x06 => self.registers.b = self.get_u8(memory),
             0x0e => {
                 let data = self.get_u8(memory);
                 self.registers.c = data;
@@ -28,6 +29,7 @@ impl CPU {
                 let data = self.get_u16(memory);
                 self.registers.set_hl(data);
             },
+            0x3e => self.registers.a = self.get_u8(memory),
             0x47 => self.registers.b = self.registers.a,
             0xc3 => {
                 let addr = self.get_u16(memory);
