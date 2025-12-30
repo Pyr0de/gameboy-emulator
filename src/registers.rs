@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 #[derive(Debug, Default)]
 #[allow(unused)]
 pub(super) struct Registers {
@@ -12,7 +14,6 @@ pub(super) struct Registers {
     pub sp: u16,
     pub pc: u16,
 }
-#[allow(dead_code)]
 pub(crate) enum RegisterU8 {
     A,
     B,
@@ -23,7 +24,6 @@ pub(crate) enum RegisterU8 {
     L,
 }
 
-#[allow(dead_code)]
 pub(crate) enum RegisterU16 {
     AF,
     BC,
@@ -31,7 +31,6 @@ pub(crate) enum RegisterU16 {
     HL,
 }
 
-#[allow(dead_code)]
 pub(crate) enum Flags {
     /// Zero flag
     Z = 0x80,
@@ -43,7 +42,6 @@ pub(crate) enum Flags {
     CY = 0x10,
 }
 
-#[allow(dead_code)]
 impl Registers {
     pub fn new() -> Self {
         // TODO: use powerup sequence values
@@ -127,12 +125,31 @@ impl ALU {
         reg.set_u8(reg1, res);
         reg.f = flag;
     }
-    pub(crate) fn sub(a: &mut u8, b: u8, carry: bool) {
-        
+
+    pub(crate) fn sub(reg: &mut Registers, reg1: &RegisterU8, b: u8, borrow: bool) {
+        let a = reg.get_u8(reg1);
+        let mut flag = Flags::N as u8;
+
+        let (res, bo) = a.borrowing_sub(b, borrow);
+
+        let (_, hc) = (a & 0xf).borrowing_sub(b & 0xf, borrow);
+        if hc {
+            flag |= Flags::H as u8;
+        }
+        if bo {
+            flag |= Flags::CY as u8;
+        }
+        if res == 0 {
+            flag |= Flags::Z as u8;
+        }
+
+        reg.set_u8(reg1, res);
+        reg.f = flag;
     }
 }
 
 #[allow(non_snake_case)]
+#[cfg(test)]
 mod ALU_test {
     use crate::registers::{ALU, Flags, RegisterU8, Registers};
 
@@ -148,5 +165,20 @@ mod ALU_test {
         assert_eq!(reg.a, 0);
         assert_eq!(reg.f, Flags::Z as u8 | Flags::CY as u8 | Flags::H as u8);
 
+    }
+
+    #[test]
+    fn sub() {
+        let mut reg = Registers::default();
+
+        reg.a = 1;
+        ALU::sub(&mut reg, &RegisterU8::A, 1, false);
+        assert_eq!(reg.a, 0);
+        assert_eq!(reg.f, Flags::Z as u8 | Flags::N as u8);
+
+        reg.a = 0;
+        ALU::sub(&mut reg, &RegisterU8::A, 1, false);
+        assert_eq!(reg.a, 255);
+        assert_eq!(reg.f, Flags::N as u8 | Flags::CY as u8 | Flags::H as u8);
     }
 }
