@@ -12,7 +12,25 @@ pub(super) struct Registers {
     pub sp: u16,
     pub pc: u16,
 }
+#[allow(dead_code)]
+pub(crate) enum RegisterU8 {
+    A,
+    B,
+    C,
+    D,
+    E,
+    H,
+    L,
+}
 
+#[allow(dead_code)]
+pub(crate) enum RegisterU16 {
+    BC,
+    DE,
+    HL,
+}
+
+#[allow(dead_code)]
 pub(crate) enum Flags {
     /// Zero flag
     Z = 0x80,
@@ -39,44 +57,60 @@ impl Registers {
         self.f & (flag as u8) > 0
     }
 
-    pub fn get_bc(&self) -> u16 {
-        (self.b as u16) << 8 | self.c as u16
+    pub fn get_u16(&self, regs: &RegisterU16) -> u16 {
+        let (hi, lo) = match regs {
+            RegisterU16::BC => (self.b, self.c),
+            RegisterU16::DE => (self.d, self.e),
+            RegisterU16::HL => (self.h, self.l),
+        };
+        (hi as u16) << 8 | lo as u16
     }
 
-    pub fn set_bc(&mut self, bc: u16) {
-        self.b = (bc >> 8) as u8;
-        self.c = (bc & 0xFF) as u8;
+    pub fn set_u16(&mut self, regs: &RegisterU16, bc: u16) {
+        let (hi, lo) = match regs {
+            RegisterU16::BC => (&mut self.b, &mut self.c),
+            RegisterU16::DE => (&mut self.d, &mut self.e),
+            RegisterU16::HL => (&mut self.h, &mut self.l),
+        };
+        *hi = (bc >> 8) as u8;
+        *lo = (bc & 0xFF) as u8;
     }
 
-    pub fn get_de(&self) -> u16 {
-        (self.d as u16) << 8 | self.e as u16
+    pub fn get_u8(&self, regs: &RegisterU8) -> u8 {
+        match regs {
+            RegisterU8::A => self.a,
+            RegisterU8::B => self.b,
+            RegisterU8::C => self.c,
+            RegisterU8::D => self.d,
+            RegisterU8::E => self.e,
+            RegisterU8::H => self.h,
+            RegisterU8::L => self.l,
+        }
     }
-
-    pub fn set_de(&mut self, de: u16) {
-        self.d = (de >> 8) as u8;
-        self.e = (de & 0xFF) as u8;
-    }
-
-    pub fn get_hl(&self) -> u16 {
-        (self.h as u16) << 8 | self.l as u16
-    }
-
-    pub fn set_hl(&mut self, hl: u16) {
-        self.h = (hl >> 8) as u8;
-        self.l = (hl & 0xFF) as u8;
+    pub fn set_u8(&mut self, regs: &RegisterU8, val: u8) {
+        let r = match regs {
+            RegisterU8::A => &mut self.a,
+            RegisterU8::B => &mut self.b,
+            RegisterU8::C => &mut self.c,
+            RegisterU8::D => &mut self.d,
+            RegisterU8::E => &mut self.e,
+            RegisterU8::H => &mut self.h,
+            RegisterU8::L => &mut self.l,
+        };
+        *r = val;
     }
 }
 
 pub struct ALU;
 
 impl ALU {
-    pub(crate) fn add(a: &mut u8, b: u8, carry: bool, flag_reg: &mut u8) {
+    pub(crate) fn add(reg: &mut Registers, reg1: &RegisterU8, b: u8, carry: bool) {
+        let a = reg.get_u8(reg1);
+
         let mut flag: u8 = 0;
         let (res, cy) = a.carrying_add(b, carry);
 
-        let hc = (((*a & 0xF) + (b & 0xF)) & 0x10) == 0x10;
-        println!("{hc}");
-
+        let hc = (((a & 0xF) + (b & 0xF)) & 0x10) == 0x10;
         if hc {
             flag |= Flags::H as u8;
         }
@@ -87,9 +121,8 @@ impl ALU {
             flag |= Flags::Z as u8;
         }
 
-        
-        *a = res;
-        *flag_reg = flag;
+        reg.set_u8(reg1, res);
+        reg.f = flag;
     }
     pub(crate) fn sub(a: &mut u8, b: u8, carry: bool) {
         
@@ -98,18 +131,19 @@ impl ALU {
 
 #[allow(non_snake_case)]
 mod ALU_test {
-    use crate::registers::{ALU, Flags, Registers};
+    use crate::registers::{ALU, Flags, RegisterU8, Registers};
 
     #[test]
     fn add() {
         let mut reg = Registers::default();
-        ALU::add(&mut reg.a, 3, false, &mut reg.f);
+        ALU::add(&mut reg, &RegisterU8::A, 3, false);
+        assert_eq!(reg.a, 3);
         assert_eq!(reg.f, 0);
 
         reg.a = 255;
-        reg.f = ALU::add(&mut reg.a, 1, false);
+        ALU::add(&mut reg, &RegisterU8::A, 1, false);
+        assert_eq!(reg.a, 0);
         assert_eq!(reg.f, Flags::Z as u8 | Flags::CY as u8 | Flags::H as u8);
 
-        reg.f = ALU::add(&mut reg.a, 255, carry)
     }
 }

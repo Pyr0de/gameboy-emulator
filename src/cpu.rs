@@ -1,4 +1,4 @@
-use crate::{memory_mapping::MemoryMapping, registers::Registers};
+use crate::{memory_mapping::MemoryMapping, registers::{RegisterU16, Registers}};
 
 pub(crate) struct CPU {
     registers: Registers
@@ -17,9 +17,9 @@ impl CPU {
             0x00 => {},
             0x01 => {
                 let data = self.get_u16(memory);
-                self.registers.set_bc(data);
+                self.registers.set_u16(&RegisterU16::BC, data);
             }
-            0x02 => self.registers.a = memory[self.registers.get_bc()],
+            0x02 => self.registers.a = memory[self.registers.get_u16(&RegisterU16::BC)],
             0x06 => self.registers.b = self.get_u8(memory),
             0x0e => {
                 let data = self.get_u8(memory);
@@ -27,7 +27,7 @@ impl CPU {
             }
             0x21 => {
                 let data = self.get_u16(memory);
-                self.registers.set_hl(data);
+                self.registers.set_u16(&RegisterU16::HL, data);
             },
             0x3e => self.registers.a = self.get_u8(memory),
             0x47 => self.registers.b = self.registers.a,
