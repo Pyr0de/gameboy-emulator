@@ -188,6 +188,13 @@ impl ALU {
         reg.f = flag;
         reg.set_u8(&RegisterU8::A, res);
     }
+
+    /// CMP Operation, Register A - `b`, does not affect Register A
+    pub(crate) fn cmp(reg: &mut Registers, b: u8) {
+        let a = reg.get_u8(&RegisterU8::A);
+        ALU::sub(reg, &RegisterU8::A, b, false);
+        reg.set_u8(&RegisterU8::A, a);
+    }
 }
 
 #[allow(non_snake_case)]
@@ -222,5 +229,24 @@ mod ALU_test {
         ALU::sub(&mut reg, &RegisterU8::A, 1, false);
         assert_eq!(reg.a, 255);
         assert_eq!(reg.f, Flags::N as u8 | Flags::CY as u8 | Flags::H as u8);
+    }
+
+    #[test]
+    fn cmp() {
+        let mut reg = Registers::default();
+        reg.a = 2;
+        ALU::cmp(&mut reg, 2);
+        assert_eq!(reg.a, 2);
+        assert_eq!(reg.f, Flags::Z as u8 | Flags::N as u8);
+
+        reg.a = 1;
+        ALU::cmp(&mut reg, 2);
+        assert_eq!(reg.a, 1);
+        assert_eq!(reg.f, Flags::CY as u8 | Flags::N as u8 | Flags::H as u8);
+
+        reg.a = 2;
+        ALU::cmp(&mut reg, 1);
+        assert_eq!(reg.a, 2);
+        assert_eq!(reg.f, Flags::N as u8);
     }
 }
