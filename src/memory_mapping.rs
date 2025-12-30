@@ -2,7 +2,7 @@ use std::ops::{Index, IndexMut};
 
 #[derive(Debug)]
 pub(crate) struct MemoryMapping {
-    pub ROM: ROM,
+    pub rom: ROM,
     // RAM,
     // VRAM,
     pub stack: [u8; 0x7F]
@@ -14,7 +14,7 @@ impl Index<u16> for MemoryMapping {
     fn index(&self, index: u16) -> &Self::Output {
         match index {
             0x0..=0x7FFF => {
-                &self.ROM[index]
+                &self.rom[index]
             }
             0xFF80..=0xFFFE => {
                 &self.stack[index as usize - 0xFF80]

@@ -11,7 +11,7 @@ fn main() -> Result<(), Error> {
     let mut buffer = Vec::new();
 
     file.read_to_end(&mut buffer)?;
-    let memory = MemoryMapping{ ROM: ROM{rom: buffer}, stack: [0; 0x7F] };
+    let memory = MemoryMapping{ rom: ROM{rom: buffer}, stack: [0; 0x7F] };
 
     let mut cpu = CPU::new();
 
