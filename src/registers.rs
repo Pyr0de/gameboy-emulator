@@ -14,6 +14,7 @@ pub(super) struct Registers {
     pub sp: u16,
     pub pc: u16,
 }
+
 pub(crate) enum RegisterU8 {
     A,
     B,
@@ -32,6 +33,9 @@ pub(crate) enum RegisterU16 {
 }
 
 pub(crate) enum Flags {
+    /// Bit position of all flags
+    /// Used only for flag mask
+    All = 0xF0,
     /// Zero flag
     Z = 0x80,
     /// Subtraction flag
@@ -105,7 +109,14 @@ impl Registers {
 pub struct ALU;
 
 impl ALU {
-    pub(crate) fn add(reg: &mut Registers, reg1: &RegisterU8, b: u8, carry: bool) {
+    /// `flag_mask` specifies which flags should be affected
+    pub(crate) fn add_u8(
+        reg: &mut Registers,
+        reg1: &RegisterU8,
+        b: u8,
+        carry: bool,
+        flag_mask: u8,
+    ) {
         let a = reg.get_u8(reg1);
 
         let mut flag: u8 = 0;
@@ -123,10 +134,38 @@ impl ALU {
         }
 
         reg.set_u8(reg1, res);
-        reg.f = flag;
+        reg.f = (flag & flag_mask) | (reg.f & !flag_mask);
     }
 
-    pub(crate) fn sub(reg: &mut Registers, reg1: &RegisterU8, b: u8, borrow: bool) {
+    /// `flag_mask` specifies which flags should be affected
+    pub(crate) fn add_u16(
+        reg: &mut Registers,
+        reg1: &RegisterU16,
+        b: u16,
+        carry: bool,
+        flag_mask: u8,
+    ) {
+        let a = reg.get_u16(reg1);
+
+        let mut flag: u8 = 0;
+        let (res, cy) = a.carrying_add(b, carry);
+
+        let hc = (((a & 0xFFF) + (b & 0xFFF)) & 0x1000) == 0x1000;
+        if hc {
+            flag |= Flags::H as u8;
+        }
+        if cy {
+            flag |= Flags::CY as u8;
+        }
+        if res == 0 {
+            flag |= Flags::Z as u8;
+        }
+
+        reg.set_u16(reg1, res);
+        reg.f = (flag & flag_mask) | (reg.f & !flag_mask);
+    }
+
+    pub(crate) fn sub(reg: &mut Registers, reg1: &RegisterU8, b: u8, borrow: bool, flag_mask: u8) {
         let a = reg.get_u8(reg1);
         let mut flag = Flags::N as u8;
 
@@ -144,7 +183,17 @@ impl ALU {
         }
 
         reg.set_u8(reg1, res);
-        reg.f = flag;
+        reg.f = (flag & flag_mask) | (reg.f & !flag_mask);
+    }
+
+    /// Does not affect flag register
+    /// Only `DEC` instruction requires 16 bit subtraction
+    pub(crate) fn dec_u16(reg: &mut Registers, reg1: &RegisterU16) {
+        let a = reg.get_u16(reg1);
+
+        let res = a.wrapping_sub(1);
+
+        reg.set_u16(reg1, res);
     }
 
     /// AND Operation, Stores value in register A
@@ -192,7 +241,7 @@ impl ALU {
     /// CMP Operation, Register A - `b`, does not affect Register A
     pub(crate) fn cmp(reg: &mut Registers, b: u8) {
         let a = reg.get_u8(&RegisterU8::A);
-        ALU::sub(reg, &RegisterU8::A, b, false);
+        ALU::sub(reg, &RegisterU8::A, b, false, Flags::All as u8);
         reg.set_u8(&RegisterU8::A, a);
     }
 }
@@ -200,20 +249,34 @@ impl ALU {
 #[allow(non_snake_case)]
 #[cfg(test)]
 mod ALU_test {
-    use crate::registers::{ALU, Flags, RegisterU8, Registers};
+    use crate::registers::{ALU, Flags, RegisterU8, RegisterU16, Registers};
 
     #[test]
     fn add() {
         let mut reg = Registers::default();
-        ALU::add(&mut reg, &RegisterU8::A, 3, false);
+        ALU::add_u8(&mut reg, &RegisterU8::A, 3, false, Flags::All as u8);
         assert_eq!(reg.a, 3);
         assert_eq!(reg.f, 0);
 
         reg.a = 255;
-        ALU::add(&mut reg, &RegisterU8::A, 1, false);
+        ALU::add_u8(&mut reg, &RegisterU8::A, 1, false, Flags::All as u8);
         assert_eq!(reg.a, 0);
         assert_eq!(reg.f, Flags::Z as u8 | Flags::CY as u8 | Flags::H as u8);
 
+        reg.f = 0;
+        reg.a = 255;
+        ALU::add_u8(&mut reg, &RegisterU8::A, 1, false, Flags::All as u8 ^ Flags::CY as u8);
+        assert!(reg.f & Flags::CY as u8 == 0);
+
+        reg.set_u16(&RegisterU16::HL, 0xfff);
+        ALU::add_u16(&mut reg, &RegisterU16::HL, 1, false, Flags::All as u8);
+        assert_eq!(reg.get_u16(&RegisterU16::HL), 0x1000);
+        assert_eq!(reg.f, Flags::H as u8);
+
+        reg.set_u16(&RegisterU16::HL, 0xffff);
+        ALU::add_u16(&mut reg, &RegisterU16::HL, 1, false, Flags::All as u8);
+        assert_eq!(reg.get_u16(&RegisterU16::HL), 0);
+        assert_eq!(reg.f, Flags::H as u8 | Flags::Z as u8 | Flags::CY as u8);
     }
 
     #[test]
@@ -221,12 +284,12 @@ mod ALU_test {
         let mut reg = Registers::default();
 
         reg.a = 1;
-        ALU::sub(&mut reg, &RegisterU8::A, 1, false);
+        ALU::sub(&mut reg, &RegisterU8::A, 1, false, Flags::All as u8);
         assert_eq!(reg.a, 0);
         assert_eq!(reg.f, Flags::Z as u8 | Flags::N as u8);
 
         reg.a = 0;
-        ALU::sub(&mut reg, &RegisterU8::A, 1, false);
+        ALU::sub(&mut reg, &RegisterU8::A, 1, false, Flags::All as u8);
         assert_eq!(reg.a, 255);
         assert_eq!(reg.f, Flags::N as u8 | Flags::CY as u8 | Flags::H as u8);
     }
