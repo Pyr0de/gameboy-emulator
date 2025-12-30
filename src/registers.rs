@@ -25,6 +25,7 @@ pub(crate) enum RegisterU8 {
 
 #[allow(dead_code)]
 pub(crate) enum RegisterU16 {
+    AF,
     BC,
     DE,
     HL,
@@ -59,6 +60,7 @@ impl Registers {
 
     pub fn get_u16(&self, regs: &RegisterU16) -> u16 {
         let (hi, lo) = match regs {
+            RegisterU16::AF => (self.a, self.f),
             RegisterU16::BC => (self.b, self.c),
             RegisterU16::DE => (self.d, self.e),
             RegisterU16::HL => (self.h, self.l),
@@ -68,6 +70,7 @@ impl Registers {
 
     pub fn set_u16(&mut self, regs: &RegisterU16, bc: u16) {
         let (hi, lo) = match regs {
+            RegisterU16::AF => (&mut self.a, &mut self.f),
             RegisterU16::BC => (&mut self.b, &mut self.c),
             RegisterU16::DE => (&mut self.d, &mut self.e),
             RegisterU16::HL => (&mut self.h, &mut self.l),
