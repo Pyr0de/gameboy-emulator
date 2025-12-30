@@ -146,6 +146,48 @@ impl ALU {
         reg.set_u8(reg1, res);
         reg.f = flag;
     }
+
+    /// AND Operation, Stores value in register A
+    pub(crate) fn and(reg: &mut Registers, b: u8) {
+        let a = reg.get_u8(&RegisterU8::A);
+        let mut flag = Flags::H as u8;
+        let res = a & b;
+
+        if res == 0 {
+            flag |= Flags::Z as u8;
+        }
+
+        reg.f = flag;
+        reg.set_u8(&RegisterU8::A, res);
+    }
+
+    /// OR Operation, Stores value in register A
+    pub(crate) fn or(reg: &mut Registers, b: u8) {
+        let a = reg.get_u8(&RegisterU8::A);
+        let mut flag = 0;
+        let res = a | b;
+
+        if res == 0 {
+            flag |= Flags::Z as u8;
+        }
+
+        reg.f = flag;
+        reg.set_u8(&RegisterU8::A, res);
+    }
+
+    /// XOR Operation, Stores value in register A
+    pub(crate) fn xor(reg: &mut Registers, b: u8) {
+        let a = reg.get_u8(&RegisterU8::A);
+        let mut flag = 0;
+        let res = a ^ b;
+
+        if res == 0 {
+            flag |= Flags::Z as u8;
+        }
+
+        reg.f = flag;
+        reg.set_u8(&RegisterU8::A, res);
+    }
 }
 
 #[allow(non_snake_case)]
