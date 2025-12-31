@@ -1295,11 +1295,1286 @@ impl Cpu {
     }
 
     fn cb_prefixed_instructions(&mut self, byte: u8) -> usize {
-        #[allow(clippy::match_single_binding)]
         match byte {
-            _ => {
-                println!("not implemented: 0xcb {:x}", byte);
-                0
+            // RLC B
+            0x00 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RLC C
+            0x01 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RLC D
+            0x02 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RLC E
+            0x03 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RLC H
+            0x04 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RLC L
+            0x05 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RLC (HL)
+            0x06 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                4
+            }
+            // RLC A
+            0x07 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RRC B
+            0x08 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RRC C
+            0x09 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RRC D
+            0x0A => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RRC E
+            0x0B => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RRC H
+            0x0C => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RRC L
+            0x0D => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RRC (HL)
+            0x0E => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                4
+            }
+            // RRC A
+            0x0F => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RL B
+            0x10 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RL C
+            0x11 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RL D
+            0x12 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RL E
+            0x13 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RL H
+            0x14 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RL L
+            0x15 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RL (HL)
+            0x16 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                4
+            }
+            // RL A
+            0x17 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RR B
+            0x18 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RR C
+            0x19 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RR D
+            0x1A => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RR E
+            0x1B => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RR H
+            0x1C => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RR L
+            0x1D => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RR (HL)
+            0x1E => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                4
+            }
+            // RR A
+            0x1F => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SLA B
+            0x20 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SLA C
+            0x21 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SLA D
+            0x22 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SLA E
+            0x23 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SLA H
+            0x24 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SLA L
+            0x25 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SLA (HL)
+            0x26 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                4
+            }
+            // SLA A
+            0x27 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SRA B
+            0x28 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SRA C
+            0x29 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SRA D
+            0x2A => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SRA E
+            0x2B => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SRA H
+            0x2C => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SRA L
+            0x2D => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SRA (HL)
+            0x2E => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                4
+            }
+            // SRA A
+            0x2F => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SWAP B
+            0x30 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SWAP C
+            0x31 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SWAP D
+            0x32 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SWAP E
+            0x33 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SWAP H
+            0x34 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SWAP L
+            0x35 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SWAP (HL)
+            0x36 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                4
+            }
+            // SWAP A
+            0x37 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SRL B
+            0x38 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SRL C
+            0x39 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SRL D
+            0x3A => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SRL E
+            0x3B => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SRL H
+            0x3C => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SRL L
+            0x3D => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SRL (HL)
+            0x3E => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                4
+            }
+            // SRL A
+            0x3F => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 0 B
+            0x40 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 0 C
+            0x41 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 0 D
+            0x42 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 0 E
+            0x43 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 0 H
+            0x44 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 0 L
+            0x45 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 0 (HL)
+            0x46 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                3
+            }
+            // BIT 0 A
+            0x47 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 1 B
+            0x48 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 1 C
+            0x49 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 1 D
+            0x4A => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 1 E
+            0x4B => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 1 H
+            0x4C => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 1 L
+            0x4D => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 1 (HL)
+            0x4E => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                3
+            }
+            // BIT 1 A
+            0x4F => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 2 B
+            0x50 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 2 C
+            0x51 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 2 D
+            0x52 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 2 E
+            0x53 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 2 H
+            0x54 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 2 L
+            0x55 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 2 (HL)
+            0x56 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                3
+            }
+            // BIT 2 A
+            0x57 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 3 B
+            0x58 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 3 C
+            0x59 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 3 D
+            0x5A => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 3 E
+            0x5B => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 3 H
+            0x5C => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 3 L
+            0x5D => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 3 (HL)
+            0x5E => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                3
+            }
+            // BIT 3 A
+            0x5F => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 4 B
+            0x60 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 4 C
+            0x61 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 4 D
+            0x62 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 4 E
+            0x63 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 4 H
+            0x64 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 4 L
+            0x65 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 4 (HL)
+            0x66 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                3
+            }
+            // BIT 4 A
+            0x67 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 5 B
+            0x68 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 5 C
+            0x69 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 5 D
+            0x6A => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 5 E
+            0x6B => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 5 H
+            0x6C => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 5 L
+            0x6D => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 5 (HL)
+            0x6E => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                3
+            }
+            // BIT 5 A
+            0x6F => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 6 B
+            0x70 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 6 C
+            0x71 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 6 D
+            0x72 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 6 E
+            0x73 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 6 H
+            0x74 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 6 L
+            0x75 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 6 (HL)
+            0x76 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                3
+            }
+            // BIT 6 A
+            0x77 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 7 B
+            0x78 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 7 C
+            0x79 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 7 D
+            0x7A => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 7 E
+            0x7B => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 7 H
+            0x7C => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 7 L
+            0x7D => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // BIT 7 (HL)
+            0x7E => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                3
+            }
+            // BIT 7 A
+            0x7F => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 0 B
+            0x80 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 0 C
+            0x81 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 0 D
+            0x82 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 0 E
+            0x83 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 0 H
+            0x84 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 0 L
+            0x85 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 0 (HL)
+            0x86 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                4
+            }
+            // RES 0 A
+            0x87 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 1 B
+            0x88 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 1 C
+            0x89 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 1 D
+            0x8A => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 1 E
+            0x8B => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 1 H
+            0x8C => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 1 L
+            0x8D => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 1 (HL)
+            0x8E => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                4
+            }
+            // RES 1 A
+            0x8F => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 2 B
+            0x90 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 2 C
+            0x91 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 2 D
+            0x92 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 2 E
+            0x93 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 2 H
+            0x94 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 2 L
+            0x95 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 2 (HL)
+            0x96 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                4
+            }
+            // RES 2 A
+            0x97 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 3 B
+            0x98 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 3 C
+            0x99 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 3 D
+            0x9A => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 3 E
+            0x9B => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 3 H
+            0x9C => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 3 L
+            0x9D => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 3 (HL)
+            0x9E => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                4
+            }
+            // RES 3 A
+            0x9F => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 4 B
+            0xA0 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 4 C
+            0xA1 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 4 D
+            0xA2 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 4 E
+            0xA3 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 4 H
+            0xA4 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 4 L
+            0xA5 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 4 (HL)
+            0xA6 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                4
+            }
+            // RES 4 A
+            0xA7 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 5 B
+            0xA8 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 5 C
+            0xA9 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 5 D
+            0xAA => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 5 E
+            0xAB => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 5 H
+            0xAC => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 5 L
+            0xAD => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 5 (HL)
+            0xAE => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                4
+            }
+            // RES 5 A
+            0xAF => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 6 B
+            0xB0 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 6 C
+            0xB1 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 6 D
+            0xB2 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 6 E
+            0xB3 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 6 H
+            0xB4 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 6 L
+            0xB5 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 6 (HL)
+            0xB6 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                4
+            }
+            // RES 6 A
+            0xB7 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 7 B
+            0xB8 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 7 C
+            0xB9 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 7 D
+            0xBA => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 7 E
+            0xBB => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 7 H
+            0xBC => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 7 L
+            0xBD => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // RES 7 (HL)
+            0xBE => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                4
+            }
+            // RES 7 A
+            0xBF => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 0 B
+            0xC0 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 0 C
+            0xC1 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 0 D
+            0xC2 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 0 E
+            0xC3 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 0 H
+            0xC4 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 0 L
+            0xC5 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 0 (HL)
+            0xC6 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                4
+            }
+            // SET 0 A
+            0xC7 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 1 B
+            0xC8 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 1 C
+            0xC9 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 1 D
+            0xCA => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 1 E
+            0xCB => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 1 H
+            0xCC => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 1 L
+            0xCD => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 1 (HL)
+            0xCE => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                4
+            }
+            // SET 1 A
+            0xCF => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 2 B
+            0xD0 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 2 C
+            0xD1 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 2 D
+            0xD2 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 2 E
+            0xD3 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 2 H
+            0xD4 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 2 L
+            0xD5 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 2 (HL)
+            0xD6 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                4
+            }
+            // SET 2 A
+            0xD7 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 3 B
+            0xD8 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 3 C
+            0xD9 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 3 D
+            0xDA => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 3 E
+            0xDB => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 3 H
+            0xDC => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 3 L
+            0xDD => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 3 (HL)
+            0xDE => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                4
+            }
+            // SET 3 A
+            0xDF => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 4 B
+            0xE0 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 4 C
+            0xE1 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 4 D
+            0xE2 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 4 E
+            0xE3 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 4 H
+            0xE4 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 4 L
+            0xE5 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 4 (HL)
+            0xE6 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                4
+            }
+            // SET 4 A
+            0xE7 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 5 B
+            0xE8 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 5 C
+            0xE9 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 5 D
+            0xEA => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 5 E
+            0xEB => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 5 H
+            0xEC => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 5 L
+            0xED => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 5 (HL)
+            0xEE => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                4
+            }
+            // SET 5 A
+            0xEF => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 6 B
+            0xF0 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 6 C
+            0xF1 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 6 D
+            0xF2 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 6 E
+            0xF3 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 6 H
+            0xF4 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 6 L
+            0xF5 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 6 (HL)
+            0xF6 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                4
+            }
+            // SET 6 A
+            0xF7 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 7 B
+            0xF8 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 7 C
+            0xF9 => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 7 D
+            0xFA => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 7 E
+            0xFB => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 7 H
+            0xFC => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 7 L
+            0xFD => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
+            }
+            // SET 7 (HL)
+            0xFE => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                4
+            }
+            // SET 7 A
+            0xFF => {
+                println!("unimplemented instruction: 0xcb {byte:x}");
+                2
             }
         }
     }
