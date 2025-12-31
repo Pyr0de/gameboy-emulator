@@ -112,9 +112,9 @@ impl Registers {
     }
 }
 
-pub struct ALU;
+pub struct Alu;
 
-impl ALU {
+impl Alu {
     /// `flag_mask` specifies which flags should be affected
     pub(crate) fn add_u8(
         reg: &mut Registers,
@@ -247,40 +247,46 @@ impl ALU {
     /// CMP Operation, Register A - `b`, does not affect Register A
     pub(crate) fn cmp(reg: &mut Registers, b: u8) {
         let a = reg.get_u8(&RegisterU8::A);
-        ALU::sub(reg, &RegisterU8::A, b, false, Flags::All as u8);
+        Alu::sub(reg, &RegisterU8::A, b, false, Flags::All as u8);
         reg.set_u8(&RegisterU8::A, a);
     }
 }
 
 #[allow(non_snake_case)]
 #[cfg(test)]
-mod ALU_test {
-    use crate::registers::{ALU, Flags, RegisterU8, RegisterU16, Registers};
+mod Alu_test {
+    use crate::registers::{Alu, Flags, RegisterU8, RegisterU16, Registers};
 
     #[test]
     fn add() {
         let mut reg = Registers::default();
-        ALU::add_u8(&mut reg, &RegisterU8::A, 3, false, Flags::All as u8);
+        Alu::add_u8(&mut reg, &RegisterU8::A, 3, false, Flags::All as u8);
         assert_eq!(reg.a, 3);
         assert_eq!(reg.f, 0);
 
         reg.a = 255;
-        ALU::add_u8(&mut reg, &RegisterU8::A, 1, false, Flags::All as u8);
+        Alu::add_u8(&mut reg, &RegisterU8::A, 1, false, Flags::All as u8);
         assert_eq!(reg.a, 0);
         assert_eq!(reg.f, Flags::Z as u8 | Flags::CY as u8 | Flags::H as u8);
 
         reg.f = 0;
         reg.a = 255;
-        ALU::add_u8(&mut reg, &RegisterU8::A, 1, false, Flags::All as u8 ^ Flags::CY as u8);
+        Alu::add_u8(
+            &mut reg,
+            &RegisterU8::A,
+            1,
+            false,
+            Flags::All as u8 ^ Flags::CY as u8,
+        );
         assert!(reg.f & Flags::CY as u8 == 0);
 
         reg.set_u16(&RegisterU16::HL, 0xfff);
-        ALU::add_u16(&mut reg, &RegisterU16::HL, 1, false, Flags::All as u8);
+        Alu::add_u16(&mut reg, &RegisterU16::HL, 1, false, Flags::All as u8);
         assert_eq!(reg.get_u16(&RegisterU16::HL), 0x1000);
         assert_eq!(reg.f, Flags::H as u8);
 
         reg.set_u16(&RegisterU16::HL, 0xffff);
-        ALU::add_u16(&mut reg, &RegisterU16::HL, 1, false, Flags::All as u8);
+        Alu::add_u16(&mut reg, &RegisterU16::HL, 1, false, Flags::All as u8);
         assert_eq!(reg.get_u16(&RegisterU16::HL), 0);
         assert_eq!(reg.f, Flags::H as u8 | Flags::Z as u8 | Flags::CY as u8);
     }
@@ -290,12 +296,12 @@ mod ALU_test {
         let mut reg = Registers::default();
 
         reg.a = 1;
-        ALU::sub(&mut reg, &RegisterU8::A, 1, false, Flags::All as u8);
+        Alu::sub(&mut reg, &RegisterU8::A, 1, false, Flags::All as u8);
         assert_eq!(reg.a, 0);
         assert_eq!(reg.f, Flags::Z as u8 | Flags::N as u8);
 
         reg.a = 0;
-        ALU::sub(&mut reg, &RegisterU8::A, 1, false, Flags::All as u8);
+        Alu::sub(&mut reg, &RegisterU8::A, 1, false, Flags::All as u8);
         assert_eq!(reg.a, 255);
         assert_eq!(reg.f, Flags::N as u8 | Flags::CY as u8 | Flags::H as u8);
     }
@@ -304,17 +310,17 @@ mod ALU_test {
     fn cmp() {
         let mut reg = Registers::default();
         reg.a = 2;
-        ALU::cmp(&mut reg, 2);
+        Alu::cmp(&mut reg, 2);
         assert_eq!(reg.a, 2);
         assert_eq!(reg.f, Flags::Z as u8 | Flags::N as u8);
 
         reg.a = 1;
-        ALU::cmp(&mut reg, 2);
+        Alu::cmp(&mut reg, 2);
         assert_eq!(reg.a, 1);
         assert_eq!(reg.f, Flags::CY as u8 | Flags::N as u8 | Flags::H as u8);
 
         reg.a = 2;
-        ALU::cmp(&mut reg, 1);
+        Alu::cmp(&mut reg, 1);
         assert_eq!(reg.a, 2);
         assert_eq!(reg.f, Flags::N as u8);
     }
