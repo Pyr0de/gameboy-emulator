@@ -15,7 +15,9 @@ pub(super) struct Registers {
     pub pc: u16,
 }
 
+#[derive(Debug, Default)]
 pub(crate) enum RegisterU8 {
+    #[default]
     A,
     B,
     C,
@@ -25,16 +27,20 @@ pub(crate) enum RegisterU8 {
     L,
 }
 
+#[derive(Debug, Default)]
 pub(crate) enum RegisterU16 {
     AF,
     BC,
     DE,
+    #[default]
     HL,
 }
 
+#[derive(Debug, Default)]
 pub(crate) enum Flags {
     /// Bit position of all flags
     /// Used only for flag mask
+    #[default]
     All = 0xF0,
     /// Zero flag
     Z = 0x80,
