@@ -14,7 +14,7 @@ impl Cpu {
         }
     }
 
-    pub(crate) fn run_instruction(&mut self, memory: &MemoryMapping) {
+    pub(crate) fn run_instruction(&mut self, memory: &mut MemoryMapping) {
         let instruction = memory[self.registers.pc];
         println!("{:x} {:x}", self.registers.pc, instruction);
         self.registers.pc += 1;
