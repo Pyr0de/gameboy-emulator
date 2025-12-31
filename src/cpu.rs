@@ -71,32 +71,53 @@ impl Cpu {
             }
             // LD (a16) SP
             0x08 => {
-                println!("unimplemented instruction: {instruction:x}");
+                let addr = self.get_u16(memory);
+                memory[addr] = (self.registers.sp & 0xff) as u8;
+                memory[addr] = (self.registers.sp >> 8) as u8;
                 5
             }
             // ADD HL BC
             0x09 => {
-                println!("unimplemented instruction: {instruction:x}");
+                let bc = self.registers.get_u16(&RegisterU16::BC);
+                Alu::add_u16(
+                    &mut self.registers,
+                    &RegisterU16::HL,
+                    bc,
+                    false,
+                    Flags::All as u8 ^ Flags::Z as u8,
+                );
                 2
             }
             // LD A (BC)
             0x0A => {
-                println!("unimplemented instruction: {instruction:x}");
+                self.registers.a = memory[self.registers.get_u16(&RegisterU16::BC)];
                 2
             }
             // DEC BC
             0x0B => {
-                println!("unimplemented instruction: {instruction:x}");
+                Alu::dec_u16(&mut self.registers, &RegisterU16::BC);
                 2
             }
             // INC C
             0x0C => {
-                println!("unimplemented instruction: {instruction:x}");
+                Alu::add_u8(
+                    &mut self.registers,
+                    &RegisterU8::C,
+                    1,
+                    false,
+                    Flags::All as u8 ^ Flags::CY as u8,
+                );
                 1
             }
             // DEC C
             0x0D => {
-                println!("unimplemented instruction: {instruction:x}");
+                Alu::sub(
+                    &mut self.registers,
+                    &RegisterU8::C,
+                    1,
+                    false,
+                    Flags::All as u8 ^ Flags::CY as u8,
+                );
                 1
             }
             // LD C n8
@@ -117,32 +138,46 @@ impl Cpu {
             }
             // LD DE n16
             0x11 => {
-                println!("unimplemented instruction: {instruction:x}");
+                let data = self.get_u16(memory);
+                self.registers.set_u16(&RegisterU16::DE, data);
                 3
             }
             // LD (DE) A
             0x12 => {
-                println!("unimplemented instruction: {instruction:x}");
+                memory[self.registers.get_u16(&RegisterU16::DE)] = self.registers.a;
                 2
             }
             // INC DE
             0x13 => {
-                println!("unimplemented instruction: {instruction:x}");
+                Alu::add_u16(&mut self.registers, &RegisterU16::DE, 1, false, 0);
                 2
             }
             // INC D
             0x14 => {
-                println!("unimplemented instruction: {instruction:x}");
+                Alu::add_u8(
+                    &mut self.registers,
+                    &RegisterU8::D,
+                    1,
+                    false,
+                    Flags::All as u8 ^ Flags::CY as u8,
+                );
                 1
             }
             // DEC D
             0x15 => {
-                println!("unimplemented instruction: {instruction:x}");
+                Alu::sub(
+                    &mut self.registers,
+                    &RegisterU8::D,
+                    1,
+                    false,
+                    Flags::All as u8 ^ Flags::CY as u8,
+                );
                 1
             }
             // LD D n8
             0x16 => {
-                println!("unimplemented instruction: {instruction:x}");
+                let data = self.get_u8(memory);
+                self.registers.set_u8(&RegisterU8::D, data);
                 2
             }
             // RLA
@@ -152,37 +187,57 @@ impl Cpu {
             }
             // JR e8
             0x18 => {
-                println!("unimplemented instruction: {instruction:x}");
+                let jump = self.get_u8(memory) as i8;
+                self.registers.pc = self.registers.pc.wrapping_add_signed(jump.into());
                 3
             }
             // ADD HL DE
             0x19 => {
-                println!("unimplemented instruction: {instruction:x}");
+                let de = self.registers.get_u16(&RegisterU16::DE);
+                Alu::add_u16(
+                    &mut self.registers,
+                    &RegisterU16::HL,
+                    de,
+                    false,
+                    Flags::All as u8 ^ Flags::Z as u8,
+                );
                 2
             }
             // LD A (DE)
             0x1A => {
-                println!("unimplemented instruction: {instruction:x}");
+                self.registers.a = memory[self.registers.get_u16(&RegisterU16::DE)];
                 2
             }
             // DEC DE
             0x1B => {
-                println!("unimplemented instruction: {instruction:x}");
+                Alu::dec_u16(&mut self.registers, &RegisterU16::DE);
                 2
             }
             // INC E
             0x1C => {
-                println!("unimplemented instruction: {instruction:x}");
+                Alu::add_u8(
+                    &mut self.registers,
+                    &RegisterU8::E,
+                    1,
+                    false,
+                    Flags::All as u8 ^ Flags::CY as u8,
+                );
                 1
             }
             // DEC E
             0x1D => {
-                println!("unimplemented instruction: {instruction:x}");
+                Alu::sub(
+                    &mut self.registers,
+                    &RegisterU8::E,
+                    1,
+                    false,
+                    Flags::All as u8 ^ Flags::CY as u8,
+                );
                 1
             }
             // LD E n8
             0x1E => {
-                println!("unimplemented instruction: {instruction:x}");
+                self.registers.e = self.get_u8(memory);
                 2
             }
             // RRA
@@ -192,8 +247,13 @@ impl Cpu {
             }
             // JR NZ e8
             0x20 => {
-                println!("unimplemented instruction: {instruction:x}");
-                3
+                let jump = self.get_u8(memory) as i8;
+                if !self.registers.get_flag(Flags::Z) {
+                    self.registers.pc = self.registers.pc.wrapping_add_signed(jump.into());
+                    3
+                } else {
+                    2
+                }
             }
             // LD HL n16
             0x21 => {
@@ -201,29 +261,42 @@ impl Cpu {
                 self.registers.set_u16(&RegisterU16::HL, data);
                 3
             }
-            // LD (HL) A
+            // LD (HL+) A
             0x22 => {
-                println!("unimplemented instruction: {instruction:x}");
+                memory[self.registers.get_u16(&RegisterU16::HL)] = self.registers.a;
+                Alu::add_u16(&mut self.registers, &RegisterU16::HL, 1, false, 0);
                 2
             }
             // INC HL
             0x23 => {
-                println!("unimplemented instruction: {instruction:x}");
+                Alu::add_u16(&mut self.registers, &RegisterU16::HL, 1, false, 0);
                 2
             }
             // INC H
             0x24 => {
-                println!("unimplemented instruction: {instruction:x}");
+                Alu::add_u8(
+                    &mut self.registers,
+                    &RegisterU8::H,
+                    1,
+                    false,
+                    Flags::All as u8 ^ Flags::CY as u8,
+                );
                 1
             }
             // DEC H
             0x25 => {
-                println!("unimplemented instruction: {instruction:x}");
+                Alu::sub(
+                    &mut self.registers,
+                    &RegisterU8::H,
+                    1,
+                    false,
+                    Flags::All as u8 ^ Flags::CY as u8,
+                );
                 1
             }
             // LD H n8
             0x26 => {
-                println!("unimplemented instruction: {instruction:x}");
+                self.registers.h = self.get_u8(memory);
                 2
             }
             // DAA
@@ -233,22 +306,34 @@ impl Cpu {
             }
             // JR Z e8
             0x28 => {
-                println!("unimplemented instruction: {instruction:x}");
-                3
+                let jump = self.get_u8(memory) as i8;
+                if !self.registers.get_flag(Flags::Z) {
+                    self.registers.pc = self.registers.pc.wrapping_add_signed(jump.into());
+                    3
+                } else {
+                    2
+                }
             }
             // ADD HL HL
             0x29 => {
-                println!("unimplemented instruction: {instruction:x}");
+                let hl = self.registers.get_u16(&RegisterU16::HL);
+                Alu::add_u16(
+                    &mut self.registers,
+                    &RegisterU16::HL,
+                    hl,
+                    false,
+                    Flags::All as u8 ^ Flags::Z as u8,
+                );
                 2
             }
             // LD A (HL)
             0x2A => {
-                println!("unimplemented instruction: {instruction:x}");
+                self.registers.a = memory[self.registers.get_u16(&RegisterU16::HL)];
                 2
             }
             // DEC HL
             0x2B => {
-                println!("unimplemented instruction: {instruction:x}");
+                Alu::dec_u16(&mut self.registers, &RegisterU16::HL);
                 2
             }
             // INC L
