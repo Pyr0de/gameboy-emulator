@@ -66,15 +66,15 @@ impl Registers {
         (hi as u16) << 8 | lo as u16
     }
 
-    pub fn set_u16(&mut self, regs: &RegisterU16, bc: u16) {
+    pub fn set_u16(&mut self, regs: &RegisterU16, val: u16) {
         let (hi, lo) = match regs {
             RegisterU16::AF => (&mut self.a, &mut self.f),
             RegisterU16::BC => (&mut self.b, &mut self.c),
             RegisterU16::DE => (&mut self.d, &mut self.e),
             RegisterU16::HL => (&mut self.h, &mut self.l),
         };
-        *hi = (bc >> 8) as u8;
-        *lo = (bc & 0xFF) as u8;
+        *hi = (val >> 8) as u8;
+        *lo = (val & 0xFF) as u8;
     }
 
     pub fn get_u8(&self, regs: &RegisterU8) -> u8 {
