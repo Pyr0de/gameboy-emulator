@@ -1,4 +1,5 @@
 mod cpu;
+mod instructions;
 mod memory_mapping;
 mod registers;
 
