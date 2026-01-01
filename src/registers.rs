@@ -36,7 +36,7 @@ pub(crate) enum RegisterU16 {
     HL,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone, Copy)]
 pub(crate) enum Flags {
     /// Bit position of all flags
     /// Used only for flag mask
@@ -64,6 +64,11 @@ impl Registers {
 
     pub fn get_flag(&self, flag: Flags) -> bool {
         self.f & (flag as u8) > 0
+    }
+    pub fn set_flag(&mut self, flag: Flags, set: bool, flag_mask: u8) {
+        if self.get_flag(flag) != set && flag_mask & (flag as u8) != 0 {
+            self.f ^= flag as u8;
+        }
     }
 
     pub fn get_u16(&self, regs: &RegisterU16) -> u16 {
@@ -124,23 +129,16 @@ impl Alu {
         flag_mask: u8,
     ) {
         let a = reg.get_u8(reg1);
-
-        let mut flag: u8 = 0;
         let (res, cy) = a.carrying_add(b, carry);
 
         let hc = (((a & 0xF) + (b & 0xF)) & 0x10) == 0x10;
-        if hc {
-            flag |= Flags::H as u8;
-        }
-        if cy {
-            flag |= Flags::CY as u8;
-        }
-        if res == 0 {
-            flag |= Flags::Z as u8;
-        }
+
+        reg.set_flag(Flags::Z, res == 0, flag_mask);
+        reg.set_flag(Flags::N, false, flag_mask);
+        reg.set_flag(Flags::H, hc, flag_mask);
+        reg.set_flag(Flags::CY, cy, flag_mask);
 
         reg.set_u8(reg1, res);
-        reg.f = (flag & flag_mask) | (reg.f & !flag_mask);
     }
 
     /// `flag_mask` specifies which flags should be affected
@@ -152,44 +150,30 @@ impl Alu {
         flag_mask: u8,
     ) {
         let a = reg.get_u16(reg1);
-
-        let mut flag: u8 = 0;
         let (res, cy) = a.carrying_add(b, carry);
 
         let hc = (((a & 0xFFF) + (b & 0xFFF)) & 0x1000) == 0x1000;
-        if hc {
-            flag |= Flags::H as u8;
-        }
-        if cy {
-            flag |= Flags::CY as u8;
-        }
-        if res == 0 {
-            flag |= Flags::Z as u8;
-        }
+
+        reg.set_flag(Flags::Z, res == 0, flag_mask);
+        reg.set_flag(Flags::N, false, flag_mask);
+        reg.set_flag(Flags::H, hc, flag_mask);
+        reg.set_flag(Flags::CY, cy, flag_mask);
 
         reg.set_u16(reg1, res);
-        reg.f = (flag & flag_mask) | (reg.f & !flag_mask);
     }
 
     pub(crate) fn sub(reg: &mut Registers, reg1: &RegisterU8, b: u8, borrow: bool, flag_mask: u8) {
         let a = reg.get_u8(reg1);
-        let mut flag = Flags::N as u8;
-
         let (res, bo) = a.borrowing_sub(b, borrow);
 
         let (_, hc) = (a & 0xf).borrowing_sub(b & 0xf, borrow);
-        if hc {
-            flag |= Flags::H as u8;
-        }
-        if bo {
-            flag |= Flags::CY as u8;
-        }
-        if res == 0 {
-            flag |= Flags::Z as u8;
-        }
+
+        reg.set_flag(Flags::Z, res == 0, flag_mask);
+        reg.set_flag(Flags::N, true, flag_mask);
+        reg.set_flag(Flags::H, hc, flag_mask);
+        reg.set_flag(Flags::CY, bo, flag_mask);
 
         reg.set_u8(reg1, res);
-        reg.f = (flag & flag_mask) | (reg.f & !flag_mask);
     }
 
     /// Does not affect flag register
@@ -205,42 +189,42 @@ impl Alu {
     /// AND Operation, Stores value in register A
     pub(crate) fn and(reg: &mut Registers, b: u8) {
         let a = reg.get_u8(&RegisterU8::A);
-        let mut flag = Flags::H as u8;
         let res = a & b;
 
-        if res == 0 {
-            flag |= Flags::Z as u8;
-        }
+        let flag_mask = Flags::All as u8;
+        reg.set_flag(Flags::Z, res == 0, flag_mask);
+        reg.set_flag(Flags::N, false, flag_mask);
+        reg.set_flag(Flags::H, true, flag_mask);
+        reg.set_flag(Flags::CY, false, flag_mask);
 
-        reg.f = flag;
         reg.set_u8(&RegisterU8::A, res);
     }
 
     /// OR Operation, Stores value in register A
     pub(crate) fn or(reg: &mut Registers, b: u8) {
         let a = reg.get_u8(&RegisterU8::A);
-        let mut flag = 0;
         let res = a | b;
 
-        if res == 0 {
-            flag |= Flags::Z as u8;
-        }
+        let flag_mask = Flags::All as u8;
+        reg.set_flag(Flags::Z, res == 0, flag_mask);
+        reg.set_flag(Flags::N, false, flag_mask);
+        reg.set_flag(Flags::H, false, flag_mask);
+        reg.set_flag(Flags::CY, false, flag_mask);
 
-        reg.f = flag;
         reg.set_u8(&RegisterU8::A, res);
     }
 
     /// XOR Operation, Stores value in register A
     pub(crate) fn xor(reg: &mut Registers, b: u8) {
         let a = reg.get_u8(&RegisterU8::A);
-        let mut flag = 0;
         let res = a ^ b;
 
-        if res == 0 {
-            flag |= Flags::Z as u8;
-        }
+        let flag_mask = Flags::All as u8;
+        reg.set_flag(Flags::Z, res == 0, flag_mask);
+        reg.set_flag(Flags::N, false, flag_mask);
+        reg.set_flag(Flags::H, false, flag_mask);
+        reg.set_flag(Flags::CY, false, flag_mask);
 
-        reg.f = flag;
         reg.set_u8(&RegisterU8::A, res);
     }
 
