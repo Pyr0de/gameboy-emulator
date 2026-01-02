@@ -3,8 +3,6 @@ use crate::{
     registers::{RegisterU8, RegisterU16},
 };
 
-// TODO: Handle exception: 0xF8
-
 pub(crate) fn decode_byte(byte: u8) -> Instruction {
     match byte {
         // NOP
@@ -989,6 +987,8 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         ),
         // RST $30
         0xF7 => Instruction::RST(6),
+        // LD HL SP+e8
+        0xF8 => Instruction::LDF8,
         // LD SP HL
         0xF9 => Instruction::LD(
             Operand::U16(OperandU16::RegisterPair(RegisterU16::SP)),

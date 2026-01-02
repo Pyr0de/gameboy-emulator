@@ -38,6 +38,7 @@ pub(crate) enum FlagCondition {
 pub(crate) enum Instruction {
     NOP,
     LD(Operand, Operand),
+    LDF8,
     INC(Operand),
     DEC(Operand),
     RLCA,
