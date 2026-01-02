@@ -17,7 +17,7 @@ pub(crate) enum OperandU8 {
     Immediate,
     Memory(OperandU16),
     /// Memory address to access will be 0xFF(U8)
-    MemoryU8(Box<OperandU8>)
+    MemoryU8(Box<OperandU8>),
 }
 
 #[derive(Debug)]

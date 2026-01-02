@@ -34,6 +34,7 @@ pub(crate) enum RegisterU16 {
     DE,
     #[default]
     HL,
+    SP,
 }
 
 #[derive(Debug, Default, Clone, Copy)]
@@ -77,6 +78,7 @@ impl Registers {
             RegisterU16::BC => (self.b, self.c),
             RegisterU16::DE => (self.d, self.e),
             RegisterU16::HL => (self.h, self.l),
+            RegisterU16::SP => return self.sp,
         };
         (hi as u16) << 8 | lo as u16
     }
@@ -87,6 +89,10 @@ impl Registers {
             RegisterU16::BC => (&mut self.b, &mut self.c),
             RegisterU16::DE => (&mut self.d, &mut self.e),
             RegisterU16::HL => (&mut self.h, &mut self.l),
+            RegisterU16::SP => {
+                self.sp = val;
+                return;
+            }
         };
         *hi = (val >> 8) as u8;
         *lo = (val & 0xFF) as u8;
