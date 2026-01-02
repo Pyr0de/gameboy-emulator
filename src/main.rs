@@ -18,15 +18,15 @@ fn main() -> Result<(), Error> {
     let mut buffer = Vec::new();
 
     file.read_to_end(&mut buffer)?;
-    let mut memory = MemoryMapping {
+    let memory = MemoryMapping {
         rom: Rom { rom: buffer },
         stack: [0; 0x7F],
     };
 
-    let mut cpu = Cpu::new();
+    let mut cpu = Cpu::new(memory);
 
     for _ in 0..10 {
-        cpu.run_instruction(&mut memory);
+        cpu.run_instruction();
     }
 
     Ok(())

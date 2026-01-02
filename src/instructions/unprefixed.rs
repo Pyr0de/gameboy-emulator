@@ -3,7 +3,6 @@ use crate::{
     registers::{RegisterU8, RegisterU16},
 };
 
-
 /// Exceptions not handled: 0x22 0x2A 0x32 0x3A
 pub(crate) fn decode_byte(byte: u8) -> Instruction {
     match byte {
