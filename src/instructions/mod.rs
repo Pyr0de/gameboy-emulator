@@ -77,8 +77,8 @@ pub(crate) enum Instruction {
     SRA(Operand),
     SWAP(Operand),
     SRL(Operand),
-    BIT(Operand, Operand),
-    RES(Operand, Operand),
-    SET(Operand, Operand),
+    BIT(u8, Operand),
+    RES(u8, Operand),
+    SET(u8, Operand),
     ILLEGAL(u8),
 }
