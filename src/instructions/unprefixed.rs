@@ -59,7 +59,7 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         // RRCA
         0x0F => Instruction::RRCA,
         // STOP n8
-        0x10 => Instruction::STOP(Operand::U8(OperandU8::Immediate)),
+        0x10 => Instruction::STOP(OperandU8::Immediate),
         // LD DE n16
         0x11 => Instruction::LD(
             Operand::U16(OperandU16::RegisterPair(RegisterU16::DE)),
@@ -84,7 +84,7 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         // RLA
         0x17 => Instruction::RLA,
         // JR e8
-        0x18 => Instruction::JR(None, Operand::U8(OperandU8::Immediate)),
+        0x18 => Instruction::JR(None, OperandU8::Immediate),
         // ADD HL DE
         0x19 => Instruction::ADD(
             Operand::U16(OperandU16::RegisterPair(RegisterU16::HL)),
@@ -109,7 +109,7 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         // RRA
         0x1F => Instruction::RRA,
         // JR NZ e8
-        0x20 => Instruction::JR(Some(FlagCondition::NZ), Operand::U8(OperandU8::Immediate)),
+        0x20 => Instruction::JR(Some(FlagCondition::NZ), OperandU8::Immediate),
         // LD HL n16
         0x21 => Instruction::LD(
             Operand::U16(OperandU16::RegisterPair(RegisterU16::HL)),
@@ -134,7 +134,7 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         // DAA
         0x27 => Instruction::DAA,
         // JR Z e8
-        0x28 => Instruction::JR(Some(FlagCondition::Z), Operand::U8(OperandU8::Immediate)),
+        0x28 => Instruction::JR(Some(FlagCondition::Z), OperandU8::Immediate),
         // ADD HL HL
         0x29 => Instruction::ADD(
             Operand::U16(OperandU16::RegisterPair(RegisterU16::HL)),
@@ -159,7 +159,7 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         // CPL
         0x2F => Instruction::CPL,
         // JR NC e8
-        0x30 => Instruction::JR(Some(FlagCondition::NC), Operand::U8(OperandU8::Immediate)),
+        0x30 => Instruction::JR(Some(FlagCondition::NC), OperandU8::Immediate),
         // LD SP n16
         0x31 => Instruction::LD(
             Operand::U16(OperandU16::RegisterPair(RegisterU16::SP)),
@@ -188,7 +188,7 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         // SCF
         0x37 => Instruction::SCF,
         // JR C e8
-        0x38 => Instruction::JR(Some(FlagCondition::C), Operand::U8(OperandU8::Immediate)),
+        0x38 => Instruction::JR(Some(FlagCondition::C), OperandU8::Immediate),
         // ADD HL SP
         0x39 => Instruction::ADD(
             Operand::U16(OperandU16::RegisterPair(RegisterU16::HL)),
@@ -571,283 +571,283 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         ),
         // ADC A B
         0x88 => Instruction::ADC(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::B)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::B),
         ),
         // ADC A C
         0x89 => Instruction::ADC(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::C)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::C),
         ),
         // ADC A D
         0x8A => Instruction::ADC(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::D)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::D),
         ),
         // ADC A E
         0x8B => Instruction::ADC(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::E)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::E),
         ),
         // ADC A H
         0x8C => Instruction::ADC(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::H)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::H),
         ),
         // ADC A L
         0x8D => Instruction::ADC(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::L)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::L),
         ),
         // ADC A (HL)
         0x8E => Instruction::ADC(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Memory(OperandU16::RegisterPair(RegisterU16::HL))),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Memory(OperandU16::RegisterPair(RegisterU16::HL)),
         ),
         // ADC A A
         0x8F => Instruction::ADC(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::A),
         ),
         // SUB A B
         0x90 => Instruction::SUB(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::B)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::B),
         ),
         // SUB A C
         0x91 => Instruction::SUB(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::C)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::C),
         ),
         // SUB A D
         0x92 => Instruction::SUB(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::D)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::D),
         ),
         // SUB A E
         0x93 => Instruction::SUB(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::E)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::E),
         ),
         // SUB A H
         0x94 => Instruction::SUB(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::H)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::H),
         ),
         // SUB A L
         0x95 => Instruction::SUB(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::L)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::L),
         ),
         // SUB A (HL)
         0x96 => Instruction::SUB(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Memory(OperandU16::RegisterPair(RegisterU16::HL))),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Memory(OperandU16::RegisterPair(RegisterU16::HL)),
         ),
         // SUB A A
         0x97 => Instruction::SUB(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::A),
         ),
         // SBC A B
         0x98 => Instruction::SBC(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::B)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::B),
         ),
         // SBC A C
         0x99 => Instruction::SBC(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::C)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::C),
         ),
         // SBC A D
         0x9A => Instruction::SBC(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::D)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::D),
         ),
         // SBC A E
         0x9B => Instruction::SBC(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::E)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::E),
         ),
         // SBC A H
         0x9C => Instruction::SBC(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::H)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::H),
         ),
         // SBC A L
         0x9D => Instruction::SBC(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::L)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::L),
         ),
         // SBC A (HL)
         0x9E => Instruction::SBC(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Memory(OperandU16::RegisterPair(RegisterU16::HL))),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Memory(OperandU16::RegisterPair(RegisterU16::HL)),
         ),
         // SBC A A
         0x9F => Instruction::SBC(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::A),
         ),
         // AND A B
         0xA0 => Instruction::AND(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::B)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::B),
         ),
         // AND A C
         0xA1 => Instruction::AND(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::C)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::C),
         ),
         // AND A D
         0xA2 => Instruction::AND(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::D)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::D),
         ),
         // AND A E
         0xA3 => Instruction::AND(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::E)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::E),
         ),
         // AND A H
         0xA4 => Instruction::AND(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::H)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::H),
         ),
         // AND A L
         0xA5 => Instruction::AND(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::L)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::L),
         ),
         // AND A (HL)
         0xA6 => Instruction::AND(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Memory(OperandU16::RegisterPair(RegisterU16::HL))),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Memory(OperandU16::RegisterPair(RegisterU16::HL)),
         ),
         // AND A A
         0xA7 => Instruction::AND(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::A),
         ),
         // XOR A B
         0xA8 => Instruction::XOR(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::B)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::B),
         ),
         // XOR A C
         0xA9 => Instruction::XOR(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::C)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::C),
         ),
         // XOR A D
         0xAA => Instruction::XOR(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::D)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::D),
         ),
         // XOR A E
         0xAB => Instruction::XOR(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::E)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::E),
         ),
         // XOR A H
         0xAC => Instruction::XOR(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::H)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::H),
         ),
         // XOR A L
         0xAD => Instruction::XOR(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::L)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::L),
         ),
         // XOR A (HL)
         0xAE => Instruction::XOR(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Memory(OperandU16::RegisterPair(RegisterU16::HL))),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Memory(OperandU16::RegisterPair(RegisterU16::HL)),
         ),
         // XOR A A
         0xAF => Instruction::XOR(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::A),
         ),
         // OR A B
         0xB0 => Instruction::OR(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::B)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::B),
         ),
         // OR A C
         0xB1 => Instruction::OR(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::C)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::C),
         ),
         // OR A D
         0xB2 => Instruction::OR(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::D)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::D),
         ),
         // OR A E
         0xB3 => Instruction::OR(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::E)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::E),
         ),
         // OR A H
         0xB4 => Instruction::OR(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::H)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::H),
         ),
         // OR A L
         0xB5 => Instruction::OR(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::L)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::L),
         ),
         // OR A (HL)
         0xB6 => Instruction::OR(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Memory(OperandU16::RegisterPair(RegisterU16::HL))),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Memory(OperandU16::RegisterPair(RegisterU16::HL)),
         ),
         // OR A A
         0xB7 => Instruction::OR(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::A),
         ),
         // CP A B
         0xB8 => Instruction::CP(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::B)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::B),
         ),
         // CP A C
         0xB9 => Instruction::CP(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::C)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::C),
         ),
         // CP A D
         0xBA => Instruction::CP(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::D)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::D),
         ),
         // CP A E
         0xBB => Instruction::CP(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::E)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::E),
         ),
         // CP A H
         0xBC => Instruction::CP(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::H)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::H),
         ),
         // CP A L
         0xBD => Instruction::CP(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::L)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::L),
         ),
         // CP A (HL)
         0xBE => Instruction::CP(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Memory(OperandU16::RegisterPair(RegisterU16::HL))),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Memory(OperandU16::RegisterPair(RegisterU16::HL)),
         ),
         // CP A A
         0xBF => Instruction::CP(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::Register(RegisterU8::A),
         ),
         // RET NZ
         0xC0 => Instruction::RET(Some(FlagCondition::NZ)),
@@ -879,10 +879,7 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         // CALL a16
         0xCD => Instruction::CALL(None, Operand::U16(OperandU16::Immediate)),
         // ADC A n8
-        0xCE => Instruction::ADC(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Immediate),
-        ),
+        0xCE => Instruction::ADC(OperandU8::Register(RegisterU8::A), OperandU8::Immediate),
         // RST $08
         0xCF => Instruction::RST(1),
         // RET NC
@@ -896,10 +893,7 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         // PUSH DE
         0xD5 => Instruction::PUSH(Operand::U16(OperandU16::RegisterPair(RegisterU16::DE))),
         // SUB A n8
-        0xD6 => Instruction::SUB(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Immediate),
-        ),
+        0xD6 => Instruction::SUB(OperandU8::Register(RegisterU8::A), OperandU8::Immediate),
         // RST $10
         0xD7 => Instruction::RST(2),
         // RET C
@@ -911,10 +905,7 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         // CALL C a16
         0xDC => Instruction::CALL(Some(FlagCondition::C), Operand::U16(OperandU16::Immediate)),
         // SBC A n8
-        0xDE => Instruction::SBC(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Immediate),
-        ),
+        0xDE => Instruction::SBC(OperandU8::Register(RegisterU8::A), OperandU8::Immediate),
         // RST $18
         0xDF => Instruction::RST(3),
         // LDH (a8) A
@@ -934,10 +925,7 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         // PUSH HL
         0xE5 => Instruction::PUSH(Operand::U16(OperandU16::RegisterPair(RegisterU16::HL))),
         // AND A n8
-        0xE6 => Instruction::AND(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Immediate),
-        ),
+        0xE6 => Instruction::AND(OperandU8::Register(RegisterU8::A), OperandU8::Immediate),
         // RST $20
         0xE7 => Instruction::RST(4),
         // ADD SP e8
@@ -956,10 +944,7 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
             Operand::U8(OperandU8::Register(RegisterU8::A)),
         ),
         // XOR A n8
-        0xEE => Instruction::XOR(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Immediate),
-        ),
+        0xEE => Instruction::XOR(OperandU8::Register(RegisterU8::A), OperandU8::Immediate),
         // RST $28
         0xEF => Instruction::RST(5),
         // LDH A (a8)
@@ -981,10 +966,7 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         // PUSH AF
         0xF5 => Instruction::PUSH(Operand::U16(OperandU16::RegisterPair(RegisterU16::AF))),
         // OR A n8
-        0xF6 => Instruction::OR(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Immediate),
-        ),
+        0xF6 => Instruction::OR(OperandU8::Register(RegisterU8::A), OperandU8::Immediate),
         // RST $30
         0xF7 => Instruction::RST(6),
         // LD HL SP+e8
@@ -1002,10 +984,7 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         // EI
         0xFB => Instruction::EI,
         // CP A n8
-        0xFE => Instruction::CP(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Immediate),
-        ),
+        0xFE => Instruction::CP(OperandU8::Register(RegisterU8::A), OperandU8::Immediate),
         // RST $38
         0xFF => Instruction::RST(7),
         // PREFIX
