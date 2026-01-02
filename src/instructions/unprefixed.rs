@@ -854,13 +854,13 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         // POP BC
         0xC1 => Instruction::POP(Operand::U16(OperandU16::RegisterPair(RegisterU16::BC))),
         // JP NZ a16
-        0xC2 => Instruction::JP(Some(FlagCondition::NZ), Operand::U16(OperandU16::Immediate)),
+        0xC2 => Instruction::JP(Some(FlagCondition::NZ), OperandU16::Immediate),
         // JP a16
-        0xC3 => Instruction::JP(None, Operand::U16(OperandU16::Immediate)),
+        0xC3 => Instruction::JP(None, OperandU16::Immediate),
         // CALL NZ a16
-        0xC4 => Instruction::CALL(Some(FlagCondition::NZ), Operand::U16(OperandU16::Immediate)),
+        0xC4 => Instruction::CALL(Some(FlagCondition::NZ), OperandU16::Immediate),
         // PUSH BC
-        0xC5 => Instruction::PUSH(Operand::U16(OperandU16::RegisterPair(RegisterU16::BC))),
+        0xC5 => Instruction::PUSH(OperandU16::RegisterPair(RegisterU16::BC)),
         // ADD A n8
         0xC6 => Instruction::ADD(
             Operand::U8(OperandU8::Register(RegisterU8::A)),
@@ -873,11 +873,11 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         // RET
         0xC9 => Instruction::RET(None),
         // JP Z a16
-        0xCA => Instruction::JP(Some(FlagCondition::Z), Operand::U16(OperandU16::Immediate)),
+        0xCA => Instruction::JP(Some(FlagCondition::Z), OperandU16::Immediate),
         // CALL Z a16
-        0xCC => Instruction::CALL(Some(FlagCondition::Z), Operand::U16(OperandU16::Immediate)),
+        0xCC => Instruction::CALL(Some(FlagCondition::Z), OperandU16::Immediate),
         // CALL a16
-        0xCD => Instruction::CALL(None, Operand::U16(OperandU16::Immediate)),
+        0xCD => Instruction::CALL(None, OperandU16::Immediate),
         // ADC A n8
         0xCE => Instruction::ADC(OperandU8::Register(RegisterU8::A), OperandU8::Immediate),
         // RST $08
@@ -887,11 +887,11 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         // POP DE
         0xD1 => Instruction::POP(Operand::U16(OperandU16::RegisterPair(RegisterU16::DE))),
         // JP NC a16
-        0xD2 => Instruction::JP(Some(FlagCondition::NC), Operand::U16(OperandU16::Immediate)),
+        0xD2 => Instruction::JP(Some(FlagCondition::NC), OperandU16::Immediate),
         // CALL NC a16
-        0xD4 => Instruction::CALL(Some(FlagCondition::NC), Operand::U16(OperandU16::Immediate)),
+        0xD4 => Instruction::CALL(Some(FlagCondition::NC), OperandU16::Immediate),
         // PUSH DE
-        0xD5 => Instruction::PUSH(Operand::U16(OperandU16::RegisterPair(RegisterU16::DE))),
+        0xD5 => Instruction::PUSH(OperandU16::RegisterPair(RegisterU16::DE)),
         // SUB A n8
         0xD6 => Instruction::SUB(OperandU8::Register(RegisterU8::A), OperandU8::Immediate),
         // RST $10
@@ -901,9 +901,9 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         // RETI
         0xD9 => Instruction::RETI,
         // JP C a16
-        0xDA => Instruction::JP(Some(FlagCondition::C), Operand::U16(OperandU16::Immediate)),
+        0xDA => Instruction::JP(Some(FlagCondition::C), OperandU16::Immediate),
         // CALL C a16
-        0xDC => Instruction::CALL(Some(FlagCondition::C), Operand::U16(OperandU16::Immediate)),
+        0xDC => Instruction::CALL(Some(FlagCondition::C), OperandU16::Immediate),
         // SBC A n8
         0xDE => Instruction::SBC(OperandU8::Register(RegisterU8::A), OperandU8::Immediate),
         // RST $18
@@ -923,7 +923,7 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
             Operand::U8(OperandU8::Register(RegisterU8::A)),
         ),
         // PUSH HL
-        0xE5 => Instruction::PUSH(Operand::U16(OperandU16::RegisterPair(RegisterU16::HL))),
+        0xE5 => Instruction::PUSH(OperandU16::RegisterPair(RegisterU16::HL)),
         // AND A n8
         0xE6 => Instruction::AND(OperandU8::Register(RegisterU8::A), OperandU8::Immediate),
         // RST $20
@@ -934,10 +934,7 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
             Operand::U8(OperandU8::Immediate),
         ),
         // JP HL
-        0xE9 => Instruction::JP(
-            None,
-            Operand::U16(OperandU16::RegisterPair(RegisterU16::HL)),
-        ),
+        0xE9 => Instruction::JP(None, OperandU16::RegisterPair(RegisterU16::HL)),
         // LD (a16) A
         0xEA => Instruction::LD(
             Operand::U8(OperandU8::Memory(OperandU16::Immediate)),
@@ -964,7 +961,7 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         // DI
         0xF3 => Instruction::DI,
         // PUSH AF
-        0xF5 => Instruction::PUSH(Operand::U16(OperandU16::RegisterPair(RegisterU16::AF))),
+        0xF5 => Instruction::PUSH(OperandU16::RegisterPair(RegisterU16::AF)),
         // OR A n8
         0xF6 => Instruction::OR(OperandU8::Register(RegisterU8::A), OperandU8::Immediate),
         // RST $30
