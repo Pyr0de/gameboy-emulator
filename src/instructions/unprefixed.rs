@@ -3,6 +3,8 @@ use crate::{
     registers::{RegisterU8, RegisterU16},
 };
 
+
+/// Exceptions not handled: 0x22 0x2A 0x32 0x3A
 pub(crate) fn decode_byte(byte: u8) -> Instruction {
     match byte {
         // NOP
@@ -115,11 +117,6 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
             Operand::U16(OperandU16::RegisterPair(RegisterU16::HL)),
             Operand::U16(OperandU16::Immediate),
         ),
-        // LD (HL) A
-        0x22 => Instruction::LD(
-            Operand::U8(OperandU8::Memory(OperandU16::RegisterPair(RegisterU16::HL))),
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-        ),
         // INC HL
         0x23 => Instruction::INC(Operand::U16(OperandU16::RegisterPair(RegisterU16::HL))),
         // INC H
@@ -140,11 +137,6 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
             Operand::U16(OperandU16::RegisterPair(RegisterU16::HL)),
             Operand::U16(OperandU16::RegisterPair(RegisterU16::HL)),
         ),
-        // LD A (HL)
-        0x2A => Instruction::LD(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Memory(OperandU16::RegisterPair(RegisterU16::HL))),
-        ),
         // DEC HL
         0x2B => Instruction::DEC(Operand::U16(OperandU16::RegisterPair(RegisterU16::HL))),
         // INC L
@@ -164,11 +156,6 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         0x31 => Instruction::LD(
             Operand::U16(OperandU16::RegisterPair(RegisterU16::SP)),
             Operand::U16(OperandU16::Immediate),
-        ),
-        // LD (HL) A
-        0x32 => Instruction::LD(
-            Operand::U8(OperandU8::Memory(OperandU16::RegisterPair(RegisterU16::HL))),
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
         ),
         // INC SP
         0x33 => Instruction::INC(Operand::U16(OperandU16::RegisterPair(RegisterU16::SP))),
@@ -193,11 +180,6 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         0x39 => Instruction::ADD(
             Operand::U16(OperandU16::RegisterPair(RegisterU16::HL)),
             Operand::U16(OperandU16::RegisterPair(RegisterU16::SP)),
-        ),
-        // LD A (HL)
-        0x3A => Instruction::LD(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::Memory(OperandU16::RegisterPair(RegisterU16::HL))),
         ),
         // DEC SP
         0x3B => Instruction::DEC(Operand::U16(OperandU16::RegisterPair(RegisterU16::SP))),
