@@ -4,9 +4,10 @@ use crate::{
     registers::{Alu, Flags, RegisterU16, Registers},
 };
 
+#[derive(Debug)]
 pub(crate) struct Cpu {
-    registers: Registers,
-    memory: MemoryMapping,
+    pub registers: Registers,
+    pub memory: MemoryMapping,
 }
 
 impl Cpu {
