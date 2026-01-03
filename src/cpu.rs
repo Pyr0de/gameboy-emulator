@@ -22,13 +22,10 @@ impl Cpu {
         let byte = self.memory[self.registers.pc];
         self.registers.pc += 1;
         let instruction = match byte {
-            0x22 => unimplemented!(),
-            0x2A => unimplemented!(),
-            0x32 => unimplemented!(),
-            0x3A => unimplemented!(),
             0xCB => instructions::cbprefixed::decode_byte(self.memory[self.registers.pc]),
             _ => instructions::unprefixed::decode_byte(byte),
         };
+
         let _cycles = match instruction {
             Instruction::NOP => 1,
             Instruction::LD(Operand::U8(a), Operand::U8(b)) => {
