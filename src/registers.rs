@@ -127,14 +127,7 @@ pub struct Alu;
 
 impl Alu {
     /// `flag_mask` specifies which flags should be affected
-    pub(crate) fn add_u8(
-        reg: &mut Registers,
-        reg1: &RegisterU8,
-        b: u8,
-        carry: bool,
-        flag_mask: u8,
-    ) {
-        let a = reg.get_u8(reg1);
+    pub(crate) fn add_u8(reg: &mut Registers, a: u8, b: u8, carry: bool, flag_mask: u8) -> u8 {
         let (res, cy) = a.carrying_add(b, carry);
 
         let hc = (((a & 0xF) + (b & 0xF)) & 0x10) == 0x10;
@@ -144,7 +137,7 @@ impl Alu {
         reg.set_flag(Flags::H, hc, flag_mask);
         reg.set_flag(Flags::CY, cy, flag_mask);
 
-        reg.set_u8(reg1, res);
+        res
     }
 
     /// `flag_mask` specifies which flags should be affected
@@ -168,8 +161,7 @@ impl Alu {
         reg.set_u16(reg1, res);
     }
 
-    pub(crate) fn sub(reg: &mut Registers, reg1: &RegisterU8, b: u8, borrow: bool, flag_mask: u8) {
-        let a = reg.get_u8(reg1);
+    pub(crate) fn sub(reg: &mut Registers, a: u8, b: u8, borrow: bool, flag_mask: u8) -> u8 {
         let (res, bo) = a.borrowing_sub(b, borrow);
 
         let (_, hc) = (a & 0xf).borrowing_sub(b & 0xf, borrow);
@@ -179,7 +171,7 @@ impl Alu {
         reg.set_flag(Flags::H, hc, flag_mask);
         reg.set_flag(Flags::CY, bo, flag_mask);
 
-        reg.set_u8(reg1, res);
+        res
     }
 
     /// Does not affect flag register
@@ -237,37 +229,28 @@ impl Alu {
     /// CMP Operation, Register A - `b`, does not affect Register A
     pub(crate) fn cmp(reg: &mut Registers, b: u8) {
         let a = reg.get_u8(&RegisterU8::A);
-        Alu::sub(reg, &RegisterU8::A, b, false, Flags::All as u8);
-        reg.set_u8(&RegisterU8::A, a);
+        Alu::sub(reg, a, b, false, Flags::All as u8);
     }
 }
 
 #[allow(non_snake_case)]
 #[cfg(test)]
 mod Alu_test {
-    use crate::registers::{Alu, Flags, RegisterU8, RegisterU16, Registers};
+    use crate::registers::{Alu, Flags, RegisterU16, Registers};
 
     #[test]
     fn add() {
         let mut reg = Registers::default();
-        Alu::add_u8(&mut reg, &RegisterU8::A, 3, false, Flags::All as u8);
+        reg.a = Alu::add_u8(&mut reg, 0, 3, false, Flags::All as u8);
         assert_eq!(reg.a, 3);
         assert_eq!(reg.f, 0);
 
-        reg.a = 255;
-        Alu::add_u8(&mut reg, &RegisterU8::A, 1, false, Flags::All as u8);
+        reg.a = Alu::add_u8(&mut reg, 255, 1, false, Flags::All as u8);
         assert_eq!(reg.a, 0);
         assert_eq!(reg.f, Flags::Z as u8 | Flags::CY as u8 | Flags::H as u8);
 
         reg.f = 0;
-        reg.a = 255;
-        Alu::add_u8(
-            &mut reg,
-            &RegisterU8::A,
-            1,
-            false,
-            Flags::All as u8 ^ Flags::CY as u8,
-        );
+        reg.a = Alu::add_u8(&mut reg, 255, 1, false, Flags::All as u8 ^ Flags::CY as u8);
         assert!(reg.f & Flags::CY as u8 == 0);
 
         reg.set_u16(&RegisterU16::HL, 0xfff);
@@ -285,13 +268,11 @@ mod Alu_test {
     fn sub() {
         let mut reg = Registers::default();
 
-        reg.a = 1;
-        Alu::sub(&mut reg, &RegisterU8::A, 1, false, Flags::All as u8);
+        reg.a = Alu::sub(&mut reg, 1, 1, false, Flags::All as u8);
         assert_eq!(reg.a, 0);
         assert_eq!(reg.f, Flags::Z as u8 | Flags::N as u8);
 
-        reg.a = 0;
-        Alu::sub(&mut reg, &RegisterU8::A, 1, false, Flags::All as u8);
+        reg.a = Alu::sub(&mut reg, 0, 1, false, Flags::All as u8);
         assert_eq!(reg.a, 255);
         assert_eq!(reg.f, Flags::N as u8 | Flags::CY as u8 | Flags::H as u8);
     }
