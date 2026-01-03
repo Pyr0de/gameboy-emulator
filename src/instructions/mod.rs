@@ -5,13 +5,13 @@ use crate::registers::{RegisterU8, RegisterU16};
 pub mod cbprefixed;
 pub mod unprefixed;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) enum Operand {
     U8(OperandU8),
     U16(OperandU16),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) enum OperandU8 {
     Register(RegisterU8),
     Immediate,
@@ -20,13 +20,13 @@ pub(crate) enum OperandU8 {
     MemoryU8(Box<OperandU8>),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) enum OperandU16 {
     RegisterPair(RegisterU16),
     Immediate,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) enum FlagCondition {
     Z,
     NZ,

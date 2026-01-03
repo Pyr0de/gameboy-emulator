@@ -15,7 +15,7 @@ pub(super) struct Registers {
     pub pc: u16,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub(crate) enum RegisterU8 {
     #[default]
     A,
@@ -27,7 +27,7 @@ pub(crate) enum RegisterU8 {
     L,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub(crate) enum RegisterU16 {
     AF,
     BC,
