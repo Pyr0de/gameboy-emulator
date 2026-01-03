@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 
+use crate::instructions::FlagCondition;
+
 #[derive(Debug, Default)]
 #[allow(unused)]
 pub(super) struct Registers {
@@ -65,6 +67,14 @@ impl Registers {
 
     pub fn get_flag(&self, flag: Flags) -> bool {
         self.f & (flag as u8) > 0
+    }
+    pub fn get_flag_condition(&self, flag_condition: FlagCondition) -> bool {
+        match flag_condition {
+            FlagCondition::Z => self.get_flag(Flags::Z),
+            FlagCondition::NZ => !self.get_flag(Flags::Z),
+            FlagCondition::C => self.get_flag(Flags::CY),
+            FlagCondition::NC => !self.get_flag(Flags::CY),
+        }
     }
     pub fn set_flag(&mut self, flag: Flags, set: bool, flag_mask: u8) {
         if self.get_flag(flag) != set && flag_mask & (flag as u8) != 0 {
