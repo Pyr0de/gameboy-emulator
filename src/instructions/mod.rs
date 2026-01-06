@@ -68,7 +68,7 @@ pub(crate) enum Instruction {
     RST(u8),
     CALL(Option<FlagCondition>, OperandU16),
     RETI,
-    LDH(Operand, Operand),
+    LDH(OperandU8, OperandU8),
     DI,
     EI,
     RLC(OperandU8),

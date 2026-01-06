@@ -70,6 +70,11 @@ impl Cpu {
                 );
                 3
             }
+            Instruction::LDH(a, b) => {
+                let (b, b_cycles) = self.get_u8(b);
+                let a_cycles = self.set_u8(a, b);
+                u8::max(a_cycles, b_cycles) + 1
+            }
             Instruction::INC(Operand::U8(a)) => {
                 let (val, _) = self.get_u8(a.clone());
                 let res = Alu::add_u8(
@@ -285,6 +290,29 @@ impl Cpu {
             Instruction::SRA(op) => {
                 let (val, cycles) = self.get_u8(op.clone());
                 let res = Alu::shift(&mut self.registers, Direction::Right, val, true);
+                self.set_u8(op, res);
+                cycles * 2
+            }
+            Instruction::SWAP(op) => {
+                let (val, cycles) = self.get_u8(op.clone());
+                let res = Alu::swap(&mut self.registers, val);
+                self.set_u8(op, res);
+                cycles * 2
+            }
+            Instruction::BIT(bit, op) => {
+                let (val, cycles) = self.get_u8(op.clone());
+                Alu::flip_bit(&mut self.registers, bit, val);
+                cycles + 1
+            }
+            Instruction::RES(bit, op) => {
+                let (val, cycles) = self.get_u8(op.clone());
+                let res = Alu::set_bit(bit, val, false);
+                self.set_u8(op, res);
+                cycles * 2
+            }
+            Instruction::SET(bit, op) => {
+                let (val, cycles) = self.get_u8(op.clone());
+                let res = Alu::set_bit(bit, val, true);
                 self.set_u8(op, res);
                 cycles * 2
             }

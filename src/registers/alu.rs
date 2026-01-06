@@ -208,6 +208,38 @@ impl Alu {
 
         res
     }
+
+    pub(crate) fn swap(reg: &mut Registers, op: u8) -> u8 {
+        let hi = op >> 4;
+        let lo = op & 0xf;
+
+        let res = lo << 4 | hi;
+
+        let flag_mask = Flags::All as u8;
+        reg.set_flag(Flags::Z, res == 0, flag_mask);
+        reg.set_flag(Flags::N, false, flag_mask);
+        reg.set_flag(Flags::H, false, flag_mask);
+        reg.set_flag(Flags::CY, false, flag_mask);
+
+        res
+    }
+
+    pub(crate) fn flip_bit(reg: &mut Registers, bit: u8, op: u8) {
+        let flag_mask = Flags::All as u8 ^ Flags::CY as u8;
+        reg.set_flag(Flags::Z, op & (1 << bit) != 0, flag_mask);
+        reg.set_flag(Flags::N, false, flag_mask);
+        reg.set_flag(Flags::H, true, flag_mask);
+    }
+
+    pub(crate) fn set_bit(bit: u8, op: u8, set: bool) -> u8 {
+        let mask = 1 << bit;
+        let mut res = op & mask;
+        if set {
+            res |= mask;
+        }
+
+        res
+    }
 }
 
 #[allow(non_snake_case)]

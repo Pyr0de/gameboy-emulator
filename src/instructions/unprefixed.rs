@@ -898,17 +898,17 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         0xDF => Instruction::RST(3),
         // LDH (a8) A
         0xE0 => Instruction::LDH(
-            Operand::U8(OperandU8::MemoryU8(Box::new(OperandU8::Immediate))),
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
+            OperandU8::MemoryU8(Box::new(OperandU8::Immediate)),
+            OperandU8::Register(RegisterU8::A),
         ),
         // POP HL
         0xE1 => Instruction::POP(RegisterU16::HL),
         // LDH (C) A
         0xE2 => Instruction::LDH(
-            Operand::U8(OperandU8::MemoryU8(Box::new(OperandU8::Register(
+            OperandU8::MemoryU8(Box::new(OperandU8::Register(
                 RegisterU8::C,
-            )))),
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
+            ))),
+            OperandU8::Register(RegisterU8::A),
         ),
         // PUSH HL
         0xE5 => Instruction::PUSH(RegisterU16::HL),
@@ -934,17 +934,17 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         0xEF => Instruction::RST(5),
         // LDH A (a8)
         0xF0 => Instruction::LDH(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::MemoryU8(Box::new(OperandU8::Immediate))),
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::MemoryU8(Box::new(OperandU8::Immediate)),
         ),
         // POP AF
         0xF1 => Instruction::POP(RegisterU16::AF),
         // LDH A (C)
         0xF2 => Instruction::LDH(
-            Operand::U8(OperandU8::Register(RegisterU8::A)),
-            Operand::U8(OperandU8::MemoryU8(Box::new(OperandU8::Register(
+            OperandU8::Register(RegisterU8::A),
+            OperandU8::MemoryU8(Box::new(OperandU8::Register(
                 RegisterU8::C,
-            )))),
+            ))),
         ),
         // DI
         0xF3 => Instruction::DI,
