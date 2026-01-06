@@ -178,6 +178,36 @@ impl Alu {
 
         res
     }
+
+    pub(crate) fn shift(reg: &mut Registers, dir: Direction, op: u8, keep: bool) -> u8 {
+        let new_cy = (op & dir as u8) > 0;
+        let res = match dir {
+            Direction::Left => {
+                let a = if keep {
+                    op & Direction::Right as u8
+                } else {
+                    0
+                };
+                (op << 1) | a
+            },
+            Direction::Right => {
+                let a = if keep {
+                    op & Direction::Left as u8
+                } else {
+                    0
+                };
+                (op >> 1) | a
+            },
+        };
+
+        let flag_mask = Flags::All as u8;
+        reg.set_flag(Flags::Z, res == 0, flag_mask);
+        reg.set_flag(Flags::N, false, flag_mask);
+        reg.set_flag(Flags::H, false, flag_mask);
+        reg.set_flag(Flags::CY, new_cy, flag_mask);
+
+        res
+    }
 }
 
 #[allow(non_snake_case)]
@@ -303,5 +333,16 @@ mod Alu_test {
         reg.f = Flags::CY as u8;
         assert_eq!(Alu::rotate(&mut reg, Direction::Right, 0x01, true), 0x80);
         assert_eq!(reg.f, Flags::CY as u8);
+    }
+
+    #[test]
+    fn shift() {
+        let mut reg = Registers::default();
+
+        assert_eq!(Alu::shift(&mut reg, Direction::Left, 0b10, false), 0b100);
+        assert_eq!(Alu::shift(&mut reg, Direction::Right, 0b10, false), 0b1);
+
+        assert_eq!(Alu::shift(&mut reg, Direction::Left, 0b11, true), 0b111);
+        assert_eq!(Alu::shift(&mut reg, Direction::Right, 0x80, true), 0xC0);
     }
 }

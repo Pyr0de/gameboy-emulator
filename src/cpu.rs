@@ -257,7 +257,6 @@ impl Cpu {
                 let res = Alu::rotate(&mut self.registers, Direction::Right, val, true);
                 self.set_u8(op, res);
                 cycles * 2
-
             }
             Instruction::RL(op) => {
                 let (val, cycles) = self.get_u8(op.clone());
@@ -268,6 +267,24 @@ impl Cpu {
             Instruction::RR(op) => {
                 let (val, cycles) = self.get_u8(op.clone());
                 let res = Alu::rotate(&mut self.registers, Direction::Right, val, false);
+                self.set_u8(op, res);
+                cycles * 2
+            }
+            Instruction::SLA(op) => {
+                let (val, cycles) = self.get_u8(op.clone());
+                let res = Alu::shift(&mut self.registers, Direction::Left, val, false);
+                self.set_u8(op, res);
+                cycles * 2
+            }
+            Instruction::SRL(op) => {
+                let (val, cycles) = self.get_u8(op.clone());
+                let res = Alu::shift(&mut self.registers, Direction::Right, val, false);
+                self.set_u8(op, res);
+                cycles * 2
+            }
+            Instruction::SRA(op) => {
+                let (val, cycles) = self.get_u8(op.clone());
+                let res = Alu::shift(&mut self.registers, Direction::Right, val, true);
                 self.set_u8(op, res);
                 cycles * 2
             }
