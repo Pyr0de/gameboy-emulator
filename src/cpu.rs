@@ -1,7 +1,7 @@
 use crate::{
     instructions::{self, Instruction, Operand, OperandU8, OperandU16},
     memory_mapping::MemoryMapping,
-    registers::{Alu, Flags, RegisterU16, Registers},
+    registers::{Alu, Direction, Flags, RegisterU16, Registers},
 };
 
 #[derive(Debug)]
@@ -245,6 +245,31 @@ impl Cpu {
                 );
                 self.registers.sp += 2;
                 3
+            }
+            Instruction::RLC(op) => {
+                let (val, cycles) = self.get_u8(op.clone());
+                let res = Alu::rotate(&mut self.registers, Direction::Left, val, true);
+                self.set_u8(op, res);
+                cycles * 2
+            }
+            Instruction::RRC(op) => {
+                let (val, cycles) = self.get_u8(op.clone());
+                let res = Alu::rotate(&mut self.registers, Direction::Right, val, true);
+                self.set_u8(op, res);
+                cycles * 2
+
+            }
+            Instruction::RL(op) => {
+                let (val, cycles) = self.get_u8(op.clone());
+                let res = Alu::rotate(&mut self.registers, Direction::Left, val, false);
+                self.set_u8(op, res);
+                cycles * 2
+            }
+            Instruction::RR(op) => {
+                let (val, cycles) = self.get_u8(op.clone());
+                let res = Alu::rotate(&mut self.registers, Direction::Right, val, false);
+                self.set_u8(op, res);
+                cycles * 2
             }
             _ => unimplemented!("not implemented {byte:x}: {instruction:?}"),
         };

@@ -3,7 +3,7 @@
 mod alu;
 
 use crate::instructions::FlagCondition;
-pub use alu::Alu;
+pub use alu::{Alu, Direction};
 
 #[derive(Debug, Default)]
 #[allow(unused)]

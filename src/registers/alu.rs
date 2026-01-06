@@ -1,4 +1,10 @@
-use crate::registers::{Flags, RegisterU8, RegisterU16, Registers};
+use crate::{registers::{Flags, RegisterU8, RegisterU16, Registers}};
+
+#[derive(Debug, Clone, Copy)]
+pub enum Direction {
+    Left = 0x80,
+    Right = 0x01,
+}
 
 pub struct Alu;
 
@@ -138,12 +144,46 @@ impl Alu {
         reg.set_flag(Flags::H, false, flag_mask);
         reg.set_flag(Flags::CY, should_carry, flag_mask);
     }
+
+    pub(crate) fn rotate(reg: &mut Registers, dir: Direction, op: u8, carry: bool) -> u8 {
+        let cy = reg.get_flag(Flags::CY);
+        let new_cy = (op & dir as u8) > 0;
+
+        let end_bit = (carry && cy) || (!carry && new_cy);
+
+        let res = match dir {
+            Direction::Left => {
+                let end = if end_bit {
+                    Direction::Right as u8
+                } else {
+                    0
+                };
+                (op << 1) | end
+            }
+            Direction::Right => {
+                let end = if end_bit {
+                    Direction::Left as u8
+                } else {
+                    0
+                };
+                (op >> 1) | end
+            }
+        };
+
+        let flag_mask = Flags::All as u8;
+        reg.set_flag(Flags::Z, res == 0, flag_mask);
+        reg.set_flag(Flags::N, false, flag_mask);
+        reg.set_flag(Flags::H, false, flag_mask);
+        reg.set_flag(Flags::CY, new_cy, flag_mask);
+
+        res
+    }
 }
 
 #[allow(non_snake_case)]
 #[cfg(test)]
 mod Alu_test {
-    use crate::registers::{Alu, Flags, RegisterU16, Registers};
+    use crate::registers::{Alu, Flags, RegisterU16, Registers, alu::Direction};
 
     #[test]
     fn add() {
@@ -227,5 +267,41 @@ mod Alu_test {
         Alu::daa(&mut reg);
         assert_eq!(reg.a, 0x07);
         assert_eq!(reg.f, Flags::N as u8);
+    }
+
+    #[test]
+    fn rotate() {
+        let mut reg = Registers::default();
+        reg.f = 0;
+        assert_eq!(Alu::rotate(&mut reg, Direction::Left, 0b0010, false), 0b0100);
+        assert_eq!(reg.f, 0);
+
+        reg.f = 0;
+        assert_eq!(Alu::rotate(&mut reg, Direction::Left, 0x80, false), 1);
+        assert_eq!(reg.f, Flags::CY as u8);
+
+        reg.f = 0;
+        assert_eq!(Alu::rotate(&mut reg, Direction::Left, 0x80, true), 0);
+        assert_eq!(reg.f, Flags::CY as u8 | Flags::Z as u8);
+
+        reg.f = Flags::CY as u8;
+        assert_eq!(Alu::rotate(&mut reg, Direction::Left, 0x80, true), 1);
+        assert_eq!(reg.f, Flags::CY as u8);
+        
+        reg.f = 0;
+        assert_eq!(Alu::rotate(&mut reg, Direction::Right, 0b0010, false), 1);
+        assert_eq!(reg.f, 0);
+
+        reg.f = 0;
+        assert_eq!(Alu::rotate(&mut reg, Direction::Right, 0x01, false), 0x80);
+        assert_eq!(reg.f, Flags::CY as u8);
+
+        reg.f = 0;
+        assert_eq!(Alu::rotate(&mut reg, Direction::Right, 0x01, true), 0);
+        assert_eq!(reg.f, Flags::CY as u8 | Flags::Z as u8);
+
+        reg.f = Flags::CY as u8;
+        assert_eq!(Alu::rotate(&mut reg, Direction::Right, 0x01, true), 0x80);
+        assert_eq!(reg.f, Flags::CY as u8);
     }
 }
