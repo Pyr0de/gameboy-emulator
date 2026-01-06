@@ -190,6 +190,19 @@ impl Cpu {
                 Alu::daa(&mut self.registers);
                 1
             }
+            Instruction::SCF => {
+                self.registers.set_flag(Flags::CY, true, Flags::CY as u8);
+                1
+            }
+            Instruction::CCF => {
+                let cy = self.registers.get_flag(Flags::CY);
+                self.registers.set_flag(Flags::CY, !cy, Flags::CY as u8);
+                1
+            }
+            Instruction::CPL => {
+                self.registers.a = !self.registers.a;
+                1
+            }
             _ => unimplemented!("not implemented {byte:x}: {instruction:?}"),
         };
     }
