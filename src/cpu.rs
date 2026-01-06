@@ -186,6 +186,10 @@ impl Cpu {
                     2
                 }
             }
+            Instruction::DAA => {
+                Alu::daa(&mut self.registers);
+                1
+            }
             _ => unimplemented!("not implemented {byte:x}: {instruction:?}"),
         };
     }

@@ -241,6 +241,36 @@ impl Alu {
         let a = reg.get_u8(&RegisterU8::A);
         Alu::sub(reg, a, b, false, Flags::All as u8);
     }
+
+    pub(crate) fn daa(reg: &mut Registers) {
+        let mut offset = 0_u8;
+        let mut should_carry = false;
+
+        let a_value = reg.a;
+        let half_carry = reg.get_flag(Flags::H);
+        let carry = reg.get_flag(Flags::CY);
+        let subtract = reg.get_flag(Flags::N);
+
+        if (!subtract && a_value & 0xF > 0x09) || half_carry {
+            offset |= 0x06;
+        }
+
+        if (!subtract && a_value > 0x99) || carry {
+            offset |= 0x60;
+            should_carry = true;
+        }
+
+        reg.a = if !subtract {
+            a_value.wrapping_add(offset)
+        } else {
+            a_value.wrapping_sub(offset)
+        };
+
+        let flag_mask = Flags::All as u8 ^ Flags::N as u8;
+        reg.set_flag(Flags::Z, reg.a == 0, flag_mask);
+        reg.set_flag(Flags::H, false, flag_mask);
+        reg.set_flag(Flags::CY, should_carry, flag_mask);
+    }
 }
 
 #[allow(non_snake_case)]
@@ -303,6 +333,32 @@ mod Alu_test {
         reg.a = 2;
         Alu::cmp(&mut reg, 1);
         assert_eq!(reg.a, 2);
+        assert_eq!(reg.f, Flags::N as u8);
+    }
+
+    #[test]
+    fn dda() {
+        let mut reg = Registers::default();
+        reg.f = 0;
+        reg.a = 0x77;
+        Alu::dda(&mut reg);
+        assert_eq!(reg.a, 0x77);
+
+        reg.f = 0;
+        reg.a = 0x7C;
+        Alu::dda(&mut reg);
+        assert_eq!(reg.a, 0x82);
+
+        reg.f = Flags::H as u8;
+        reg.a = 0x9C;
+        Alu::dda(&mut reg);
+        assert_eq!(reg.a, 0x02);
+        assert_eq!(reg.f, Flags::CY as u8);
+
+        reg.f = Flags::H as u8 | Flags::N as u8;
+        reg.a = 0x0D;
+        Alu::dda(&mut reg);
+        assert_eq!(reg.a, 0x07);
         assert_eq!(reg.f, Flags::N as u8);
     }
 }
