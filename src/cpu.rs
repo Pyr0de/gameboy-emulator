@@ -173,7 +173,10 @@ impl Cpu {
                 }
             }
             Instruction::RET(condition) => {
-                if condition.clone().is_none_or(|cond| self.registers.get_flag_condition(cond)) {
+                if condition
+                    .clone()
+                    .is_none_or(|cond| self.registers.get_flag_condition(cond))
+                {
                     let addr = (self.memory[self.registers.sp + 1] as u16) << 8
                         | self.memory[self.registers.sp] as u16;
                     self.registers.sp += 2;
@@ -202,6 +205,22 @@ impl Cpu {
             Instruction::CPL => {
                 self.registers.a = !self.registers.a;
                 1
+            }
+            Instruction::PUSH(r) => {
+                let (hi, lo) = self.registers.get_split_u16(&r);
+                self.memory[self.registers.sp - 1] = hi;
+                self.memory[self.registers.sp - 2] = lo;
+                self.registers.sp -= 2;
+                4
+            }
+            Instruction::POP(r) => {
+                self.registers.set_split_u16(
+                    &r,
+                    self.memory[self.registers.sp + 1],
+                    self.memory[self.registers.sp],
+                );
+                self.registers.sp += 2;
+                3
             }
             _ => unimplemented!("not implemented {byte:x}: {instruction:?}"),
         };

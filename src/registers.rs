@@ -93,6 +93,31 @@ impl Registers {
         (hi as u16) << 8 | lo as u16
     }
 
+    pub fn get_split_u16(&self, regs: &RegisterU16) -> (u8, u8) {
+        match regs {
+            RegisterU16::AF => (self.a, self.f),
+            RegisterU16::BC => (self.b, self.c),
+            RegisterU16::DE => (self.d, self.e),
+            RegisterU16::HL => (self.h, self.l),
+            RegisterU16::SP => return ((self.sp >> 8) as u8, (self.sp & 0xff) as u8),
+        }
+    }
+
+    pub fn set_split_u16(&mut self, regs: &RegisterU16, higher: u8, lower: u8) {
+        let (hi, lo) = match regs {
+            RegisterU16::AF => (&mut self.a, &mut self.f),
+            RegisterU16::BC => (&mut self.b, &mut self.c),
+            RegisterU16::DE => (&mut self.d, &mut self.e),
+            RegisterU16::HL => (&mut self.h, &mut self.l),
+            RegisterU16::SP => {
+                self.sp = (higher as u16) << 8 | lower as u16;
+                return;
+            }
+        };
+        *hi = higher;
+        *lo = lower;
+    }
+
     pub fn set_u16(&mut self, regs: &RegisterU16, val: u16) {
         let (hi, lo) = match regs {
             RegisterU16::AF => (&mut self.a, &mut self.f),

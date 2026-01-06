@@ -840,7 +840,7 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         // RET NZ
         0xC0 => Instruction::RET(Some(FlagCondition::NZ)),
         // POP BC
-        0xC1 => Instruction::POP(Operand::U16(OperandU16::RegisterPair(RegisterU16::BC))),
+        0xC1 => Instruction::POP(RegisterU16::BC),
         // JP NZ a16
         0xC2 => Instruction::JP(Some(FlagCondition::NZ), OperandU16::Immediate),
         // JP a16
@@ -848,7 +848,7 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         // CALL NZ a16
         0xC4 => Instruction::CALL(Some(FlagCondition::NZ), OperandU16::Immediate),
         // PUSH BC
-        0xC5 => Instruction::PUSH(OperandU16::RegisterPair(RegisterU16::BC)),
+        0xC5 => Instruction::PUSH(RegisterU16::BC),
         // ADD A n8
         0xC6 => Instruction::ADD(
             Operand::U8(OperandU8::Register(RegisterU8::A)),
@@ -873,13 +873,13 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         // RET NC
         0xD0 => Instruction::RET(Some(FlagCondition::NC)),
         // POP DE
-        0xD1 => Instruction::POP(Operand::U16(OperandU16::RegisterPair(RegisterU16::DE))),
+        0xD1 => Instruction::POP(RegisterU16::DE),
         // JP NC a16
         0xD2 => Instruction::JP(Some(FlagCondition::NC), OperandU16::Immediate),
         // CALL NC a16
         0xD4 => Instruction::CALL(Some(FlagCondition::NC), OperandU16::Immediate),
         // PUSH DE
-        0xD5 => Instruction::PUSH(OperandU16::RegisterPair(RegisterU16::DE)),
+        0xD5 => Instruction::PUSH(RegisterU16::DE),
         // SUB A n8
         0xD6 => Instruction::SUB(OperandU8::Register(RegisterU8::A), OperandU8::Immediate),
         // RST $10
@@ -902,7 +902,7 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
             Operand::U8(OperandU8::Register(RegisterU8::A)),
         ),
         // POP HL
-        0xE1 => Instruction::POP(Operand::U16(OperandU16::RegisterPair(RegisterU16::HL))),
+        0xE1 => Instruction::POP(RegisterU16::HL),
         // LDH (C) A
         0xE2 => Instruction::LDH(
             Operand::U8(OperandU8::MemoryU8(Box::new(OperandU8::Register(
@@ -911,7 +911,7 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
             Operand::U8(OperandU8::Register(RegisterU8::A)),
         ),
         // PUSH HL
-        0xE5 => Instruction::PUSH(OperandU16::RegisterPair(RegisterU16::HL)),
+        0xE5 => Instruction::PUSH(RegisterU16::HL),
         // AND A n8
         0xE6 => Instruction::AND(OperandU8::Register(RegisterU8::A), OperandU8::Immediate),
         // RST $20
@@ -938,7 +938,7 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
             Operand::U8(OperandU8::MemoryU8(Box::new(OperandU8::Immediate))),
         ),
         // POP AF
-        0xF1 => Instruction::POP(Operand::U16(OperandU16::RegisterPair(RegisterU16::AF))),
+        0xF1 => Instruction::POP(RegisterU16::AF),
         // LDH A (C)
         0xF2 => Instruction::LDH(
             Operand::U8(OperandU8::Register(RegisterU8::A)),
@@ -949,7 +949,7 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         // DI
         0xF3 => Instruction::DI,
         // PUSH AF
-        0xF5 => Instruction::PUSH(OperandU16::RegisterPair(RegisterU16::AF)),
+        0xF5 => Instruction::PUSH(RegisterU16::AF),
         // OR A n8
         0xF6 => Instruction::OR(OperandU8::Register(RegisterU8::A), OperandU8::Immediate),
         // RST $30
