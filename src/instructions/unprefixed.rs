@@ -29,7 +29,7 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
             Operand::U8(OperandU8::Immediate),
         ),
         // RLCA
-        0x07 => Instruction::RLCA,
+        0x07 => Instruction::RLC(OperandU8::Register(RegisterU8::A)),
         // LD (a16) SP
         0x08 => Instruction::LD(
             Operand::U8(OperandU8::Memory(OperandU16::Immediate)),
@@ -57,7 +57,7 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
             Operand::U8(OperandU8::Immediate),
         ),
         // RRCA
-        0x0F => Instruction::RRCA,
+        0x0F => Instruction::RRC(OperandU8::Register(RegisterU8::A)),
         // STOP n8
         0x10 => Instruction::STOP(OperandU8::Immediate),
         // LD DE n16
@@ -82,7 +82,7 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
             Operand::U8(OperandU8::Immediate),
         ),
         // RLA
-        0x17 => Instruction::RLA,
+        0x17 => Instruction::RL(OperandU8::Register(RegisterU8::A)),
         // JR e8
         0x18 => Instruction::JR(None, OperandU8::Immediate),
         // ADD HL DE
@@ -107,7 +107,7 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
             Operand::U8(OperandU8::Immediate),
         ),
         // RRA
-        0x1F => Instruction::RRA,
+        0x1F => Instruction::RR(OperandU8::Register(RegisterU8::A)),
         // JR NZ e8
         0x20 => Instruction::JR(Some(FlagCondition::NZ), OperandU8::Immediate),
         // LD HL n16
