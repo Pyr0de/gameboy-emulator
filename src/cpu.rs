@@ -38,6 +38,30 @@ impl Cpu {
                 let b_cycles = self.set_u16(a, value);
                 u8::max(a_cycles, b_cycles)
             }
+            Instruction::LD22 => {
+                let hl = self.registers.get_u16(&RegisterU16::HL);
+                self.memory[hl] = self.registers.a;
+                self.registers.set_u16(&RegisterU16::HL, hl.wrapping_add(1));
+                2
+            }
+            Instruction::LD2A => {
+                let hl = self.registers.get_u16(&RegisterU16::HL);
+                self.registers.a = self.memory[hl];
+                self.registers.set_u16(&RegisterU16::HL, hl.wrapping_add(1));
+                2
+            }
+            Instruction::LD32 => {
+                let hl = self.registers.get_u16(&RegisterU16::HL);
+                self.memory[hl] = self.registers.a;
+                self.registers.set_u16(&RegisterU16::HL, hl.wrapping_sub(1));
+                2
+            }
+            Instruction::LD3A => {
+                let hl = self.registers.get_u16(&RegisterU16::HL);
+                self.registers.a = self.memory[hl];
+                self.registers.set_u16(&RegisterU16::HL, hl.wrapping_sub(1));
+                2
+            }
             Instruction::LDF8 => {
                 let (signed, _cycles) = self.get_u8(OperandU8::Immediate);
                 self.registers.set_u16(
