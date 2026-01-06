@@ -99,7 +99,7 @@ impl Registers {
             RegisterU16::BC => (self.b, self.c),
             RegisterU16::DE => (self.d, self.e),
             RegisterU16::HL => (self.h, self.l),
-            RegisterU16::SP => return ((self.sp >> 8) as u8, (self.sp & 0xff) as u8),
+            RegisterU16::SP => ((self.sp >> 8) as u8, (self.sp & 0xff) as u8),
         }
     }
 
