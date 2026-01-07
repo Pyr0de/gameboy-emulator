@@ -8,6 +8,8 @@ use crate::{
 pub(crate) struct Cpu {
     pub registers: Registers,
     pub memory: MemoryMapping,
+    set_ime: bool,
+    ime: bool,
 }
 
 impl Cpu {
@@ -15,10 +17,18 @@ impl Cpu {
         Cpu {
             registers: Registers::new(),
             memory,
+            set_ime: false,
+            ime: false,
         }
     }
 
     pub(crate) fn run_instruction(&mut self) {
+        // EI is delayed by 1 instruction
+        if self.set_ime {
+            self.set_ime = false;
+            self.ime = true;
+        }
+
         let byte = self.memory[self.registers.pc];
         self.registers.pc += 1;
         let instruction = match byte {
@@ -315,6 +325,23 @@ impl Cpu {
                 let res = Alu::set_bit(bit, val, true);
                 self.set_u8(op, res);
                 cycles * 2
+            }
+            Instruction::EI => {
+                self.set_ime = true;
+                1
+            }
+            Instruction::DI => {
+                self.ime = false;
+                1
+            }
+            Instruction::RETI => {
+                    // Enables interrupts and returns (same as ei immediately followed by ret)
+                    self.set_ime = true;
+                    let addr = (self.memory[self.registers.sp + 1] as u16) << 8
+                        | self.memory[self.registers.sp] as u16;
+                    self.registers.sp += 2;
+                    self.registers.pc = addr;
+                    4
             }
             _ => unimplemented!("not implemented {byte:x}: {instruction:?}"),
         };
