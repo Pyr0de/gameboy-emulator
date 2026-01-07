@@ -1,4 +1,4 @@
-use crate::{registers::{Flags, RegisterU8, RegisterU16, Registers}};
+use crate::registers::{Flags, RegisterU8, RegisterU16, Registers};
 
 #[derive(Debug, Clone, Copy)]
 pub enum Direction {
@@ -153,19 +153,11 @@ impl Alu {
 
         let res = match dir {
             Direction::Left => {
-                let end = if end_bit {
-                    Direction::Right as u8
-                } else {
-                    0
-                };
+                let end = if end_bit { Direction::Right as u8 } else { 0 };
                 (op << 1) | end
             }
             Direction::Right => {
-                let end = if end_bit {
-                    Direction::Left as u8
-                } else {
-                    0
-                };
+                let end = if end_bit { Direction::Left as u8 } else { 0 };
                 (op >> 1) | end
             }
         };
@@ -183,21 +175,13 @@ impl Alu {
         let new_cy = (op & dir as u8) > 0;
         let res = match dir {
             Direction::Left => {
-                let a = if keep {
-                    op & Direction::Right as u8
-                } else {
-                    0
-                };
+                let a = if keep { op & Direction::Right as u8 } else { 0 };
                 (op << 1) | a
-            },
+            }
             Direction::Right => {
-                let a = if keep {
-                    op & Direction::Left as u8
-                } else {
-                    0
-                };
+                let a = if keep { op & Direction::Left as u8 } else { 0 };
                 (op >> 1) | a
-            },
+            }
         };
 
         let flag_mask = Flags::All as u8;
@@ -335,7 +319,10 @@ mod Alu_test {
     fn rotate() {
         let mut reg = Registers::default();
         reg.f = 0;
-        assert_eq!(Alu::rotate(&mut reg, Direction::Left, 0b0010, false), 0b0100);
+        assert_eq!(
+            Alu::rotate(&mut reg, Direction::Left, 0b0010, false),
+            0b0100
+        );
         assert_eq!(reg.f, 0);
 
         reg.f = 0;
@@ -349,7 +336,7 @@ mod Alu_test {
         reg.f = Flags::CY as u8;
         assert_eq!(Alu::rotate(&mut reg, Direction::Left, 0x80, true), 1);
         assert_eq!(reg.f, Flags::CY as u8);
-        
+
         reg.f = 0;
         assert_eq!(Alu::rotate(&mut reg, Direction::Right, 0b0010, false), 1);
         assert_eq!(reg.f, 0);

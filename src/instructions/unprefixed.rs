@@ -905,9 +905,7 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         0xE1 => Instruction::POP(RegisterU16::HL),
         // LDH (C) A
         0xE2 => Instruction::LDH(
-            OperandU8::MemoryU8(Box::new(OperandU8::Register(
-                RegisterU8::C,
-            ))),
+            OperandU8::MemoryU8(Box::new(OperandU8::Register(RegisterU8::C))),
             OperandU8::Register(RegisterU8::A),
         ),
         // PUSH HL
@@ -942,9 +940,7 @@ pub(crate) fn decode_byte(byte: u8) -> Instruction {
         // LDH A (C)
         0xF2 => Instruction::LDH(
             OperandU8::Register(RegisterU8::A),
-            OperandU8::MemoryU8(Box::new(OperandU8::Register(
-                RegisterU8::C,
-            ))),
+            OperandU8::MemoryU8(Box::new(OperandU8::Register(RegisterU8::C))),
         ),
         // DI
         0xF3 => Instruction::DI,
