@@ -335,13 +335,13 @@ impl Cpu {
                 1
             }
             Instruction::RETI => {
-                    // Enables interrupts and returns (same as ei immediately followed by ret)
-                    self.set_ime = true;
-                    let addr = (self.memory[self.registers.sp + 1] as u16) << 8
-                        | self.memory[self.registers.sp] as u16;
-                    self.registers.sp += 2;
-                    self.registers.pc = addr;
-                    4
+                // Enables interrupts and returns (same as ei immediately followed by ret)
+                self.set_ime = true;
+                let addr = (self.memory[self.registers.sp + 1] as u16) << 8
+                    | self.memory[self.registers.sp] as u16;
+                self.registers.sp += 2;
+                self.registers.pc = addr;
+                4
             }
             _ => unimplemented!("not implemented {byte:x}: {instruction:?}"),
         };

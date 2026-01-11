@@ -20,10 +20,7 @@ fn main() -> Result<(), Error> {
     file.read_to_end(&mut buffer)?;
     let memory = MemoryMapping {
         rom: Rom { rom: buffer },
-        vram: [0; 0x2000],
-        external_ram: [0; 0x2000],
-        wram: [0; 0x2000],
-        stack: [0; 0x7F],
+        ..Default::default()
     };
 
     let mut cpu = Cpu::new(memory);
