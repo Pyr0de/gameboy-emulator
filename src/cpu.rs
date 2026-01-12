@@ -202,8 +202,8 @@ impl Cpu {
             Instruction::CALL(condition, op) => {
                 let (addr, _cycles) = self.get_u16(op);
                 if condition.is_none_or(|cond| self.registers.get_flag_condition(cond)) {
-                    self.memory[self.registers.sp - 1] = (self.registers.pc & 0xff) as u8;
-                    self.memory[self.registers.sp - 2] = (self.registers.pc >> 8) as u8;
+                    self.memory[self.registers.sp - 1] = (self.registers.pc >> 8) as u8;
+                    self.memory[self.registers.sp - 2] = (self.registers.pc & 0xff) as u8;
                     self.registers.sp -= 2;
                     self.registers.pc = addr;
                     6
