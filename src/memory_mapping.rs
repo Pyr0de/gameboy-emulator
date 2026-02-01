@@ -1,5 +1,7 @@
 use std::ops::{Index, IndexMut};
 
+use anyhow::{Result, bail};
+
 #[derive(Debug)]
 pub(crate) struct MemoryMapping {
     pub rom: Rom,
@@ -21,10 +23,9 @@ impl Default for MemoryMapping {
     }
 }
 
-impl Index<u16> for MemoryMapping {
-    type Output = u8;
-    fn index(&self, index: u16) -> &Self::Output {
-        match index {
+impl MemoryMapping {
+    pub fn get(&self, index: u16) -> Result<&u8> {
+        Ok(match index {
             0x0..=0x7FFF => &self.rom[index],
             0x8000..=0x9FFF => &self.vram[index as usize - 0x8000],
             0xA000..=0xBFFF => &self.external_ram[index as usize - 0xA000],
@@ -32,16 +33,15 @@ impl Index<u16> for MemoryMapping {
             0xFF70 => &self.wram.bank_select,
             0xFF80..=0xFFFE => &self.stack[index as usize - 0xFF80],
             _ => {
-                unimplemented!()
+                bail!("unimplemented memory 0x{:x}", index)
             }
-        }
+        })
     }
-}
-impl IndexMut<u16> for MemoryMapping {
-    fn index_mut(&mut self, index: u16) -> &mut Self::Output {
-        match index {
+
+    pub fn get_mut(&mut self, index: u16) -> Result<&mut u8> {
+        Ok(match index {
             0x0..=0x7FFF => {
-                panic!("cannot write to rom: {:x}", index);
+                bail!("cannot write to rom: {:x}", index);
             }
             0x8000..=0x9FFF => &mut self.vram[index as usize - 0x8000],
             0xA000..=0xBFFF => &mut self.external_ram[index as usize - 0xA000],
@@ -49,9 +49,9 @@ impl IndexMut<u16> for MemoryMapping {
             0xFF70 => &mut self.wram.bank_select,
             0xFF80..=0xFFFE => &mut self.stack[index as usize - 0xFF80],
             _ => {
-                unimplemented!()
+                bail!("unimplemented memory 0x{:x}", index)
             }
-        }
+        })
     }
 }
 

@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Result, bail};
 
 use crate::{
     instructions::{self, Instruction, Operand, OperandU8, OperandU16},
@@ -31,10 +31,10 @@ impl Cpu {
             self.ime = true;
         }
 
-        let byte = self.memory[self.registers.pc];
+        let byte = *self.memory.get(self.registers.pc)?;
         self.registers.pc += 1;
         let instruction = match byte {
-            0xCB => instructions::cbprefixed::decode_byte(self.memory[self.registers.pc]),
+            0xCB => instructions::cbprefixed::decode_byte(*self.memory.get(self.registers.pc)?),
             _ => instructions::unprefixed::decode_byte(byte),
         };
 
@@ -52,25 +52,25 @@ impl Cpu {
             }
             Instruction::LD22 => {
                 let hl = self.registers.get_u16(&RegisterU16::HL);
-                self.memory[hl] = self.registers.a;
+                *self.memory.get_mut(hl)? = self.registers.a;
                 self.registers.set_u16(&RegisterU16::HL, hl.wrapping_add(1));
                 2
             }
             Instruction::LD2A => {
                 let hl = self.registers.get_u16(&RegisterU16::HL);
-                self.registers.a = self.memory[hl];
+                self.registers.a = *self.memory.get(hl)?;
                 self.registers.set_u16(&RegisterU16::HL, hl.wrapping_add(1));
                 2
             }
             Instruction::LD32 => {
                 let hl = self.registers.get_u16(&RegisterU16::HL);
-                self.memory[hl] = self.registers.a;
+                *self.memory.get_mut(hl)? = self.registers.a;
                 self.registers.set_u16(&RegisterU16::HL, hl.wrapping_sub(1));
                 2
             }
             Instruction::LD3A => {
                 let hl = self.registers.get_u16(&RegisterU16::HL);
-                self.registers.a = self.memory[hl];
+                self.registers.a = *self.memory.get(hl)?;
                 self.registers.set_u16(&RegisterU16::HL, hl.wrapping_sub(1));
                 2
             }
@@ -204,8 +204,8 @@ impl Cpu {
             Instruction::CALL(condition, op) => {
                 let (addr, _cycles) = self.get_u16(op)?;
                 if condition.is_none_or(|cond| self.registers.get_flag_condition(cond)) {
-                    self.memory[self.registers.sp - 1] = (self.registers.pc >> 8) as u8;
-                    self.memory[self.registers.sp - 2] = (self.registers.pc & 0xff) as u8;
+                    *self.memory.get_mut(self.registers.sp - 1)? = (self.registers.pc >> 8) as u8;
+                    *self.memory.get_mut(self.registers.sp - 2)? = (self.registers.pc & 0xff) as u8;
                     self.registers.sp -= 2;
                     self.registers.pc = addr;
                     6
@@ -218,8 +218,8 @@ impl Cpu {
                     .clone()
                     .is_none_or(|cond| self.registers.get_flag_condition(cond))
                 {
-                    let addr = (self.memory[self.registers.sp + 1] as u16) << 8
-                        | self.memory[self.registers.sp] as u16;
+                    let addr = (*self.memory.get(self.registers.sp + 1)? as u16) << 8
+                        | *self.memory.get(self.registers.sp)? as u16;
                     self.registers.sp += 2;
                     self.registers.pc = addr;
                     match condition {
@@ -249,16 +249,16 @@ impl Cpu {
             }
             Instruction::PUSH(r) => {
                 let (hi, lo) = self.registers.get_split_u16(&r);
-                self.memory[self.registers.sp - 1] = hi;
-                self.memory[self.registers.sp - 2] = lo;
+                *self.memory.get_mut(self.registers.sp - 1)? = hi;
+                *self.memory.get_mut(self.registers.sp - 2)? = lo;
                 self.registers.sp -= 2;
                 4
             }
             Instruction::POP(r) => {
                 self.registers.set_split_u16(
                     &r,
-                    self.memory[self.registers.sp + 1],
-                    self.memory[self.registers.sp],
+                    *self.memory.get_mut(self.registers.sp + 1)?,
+                    *self.memory.get_mut(self.registers.sp)?,
                 );
                 self.registers.sp += 2;
                 3
@@ -339,13 +339,13 @@ impl Cpu {
             Instruction::RETI => {
                 // Enables interrupts and returns (same as ei immediately followed by ret)
                 self.set_ime = true;
-                let addr = (self.memory[self.registers.sp + 1] as u16) << 8
-                    | self.memory[self.registers.sp] as u16;
+                let addr = (*self.memory.get(self.registers.sp + 1)? as u16) << 8
+                    | *self.memory.get(self.registers.sp)? as u16;
                 self.registers.sp += 2;
                 self.registers.pc = addr;
                 4
             }
-            _ => unimplemented!("not implemented {byte:x}: {instruction:?}"),
+            _ => bail!("not implemented {byte:x}: {instruction:?}"),
         };
 
         Ok(instruction)
@@ -357,8 +357,8 @@ impl Cpu {
             OperandU16::Immediate => {
                 self.registers.pc += 2;
                 (
-                    self.memory[self.registers.pc - 2] as u16
-                        | ((self.memory[self.registers.pc - 1] as u16) << 8),
+                    *self.memory.get(self.registers.pc - 2)? as u16
+                        | ((*self.memory.get(self.registers.pc - 1)? as u16) << 8),
                     3,
                 )
             }
@@ -379,15 +379,15 @@ impl Cpu {
             OperandU8::Register(r) => (self.registers.get_u8(&r), 1),
             OperandU8::Immediate => {
                 self.registers.pc += 1;
-                (self.memory[self.registers.pc - 1], 2)
+                (*self.memory.get(self.registers.pc - 1)?, 2)
             }
             OperandU8::Memory(addr) => {
                 let (a, cycles) = self.get_u16(addr)?;
-                (self.memory[a], cycles)
+                (*self.memory.get(a)?, cycles)
             }
             OperandU8::MemoryU8(offset) => {
                 let (a, cycles) = self.get_u8(*offset)?;
-                (self.memory[0xff00 | a as u16], cycles)
+                (*self.memory.get(0xff00 | a as u16)?, cycles)
             }
         })
     }
@@ -400,12 +400,12 @@ impl Cpu {
             OperandU8::Immediate => unreachable!("cannot write to immediate"),
             OperandU8::Memory(addr) => {
                 let (a, cycles) = self.get_u16(addr)?;
-                self.memory[a] = value;
+                *self.memory.get_mut(a)? = value;
                 cycles
             }
             OperandU8::MemoryU8(offset) => {
                 let (a, cycles) = self.get_u8(*offset)?;
-                self.memory[0xff00 | a as u16] = value;
+                *self.memory.get_mut(0xff00 | a as u16)? = value;
                 cycles
             }
         })
