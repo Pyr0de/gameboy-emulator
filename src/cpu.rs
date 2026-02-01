@@ -1,3 +1,5 @@
+use anyhow::Result;
+
 use crate::{
     instructions::{self, Instruction, Operand, OperandU8, OperandU16},
     memory_mapping::MemoryMapping,
@@ -22,7 +24,7 @@ impl Cpu {
         }
     }
 
-    pub(crate) fn run_instruction(&mut self) {
+    pub(crate) fn run_instruction(&mut self) -> Result<Instruction> {
         // EI is delayed by 1 instruction
         if self.set_ime {
             self.set_ime = false;
@@ -36,16 +38,16 @@ impl Cpu {
             _ => instructions::unprefixed::decode_byte(byte),
         };
 
-        let _cycles = match instruction {
+        let _cycles = match instruction.clone() {
             Instruction::NOP => 1,
             Instruction::LD(Operand::U8(a), Operand::U8(b)) => {
-                let (value, a_cycles) = self.get_u8(b);
-                let b_cycles = self.set_u8(a, value);
+                let (value, a_cycles) = self.get_u8(b)?;
+                let b_cycles = self.set_u8(a, value)?;
                 u8::max(a_cycles, b_cycles)
             }
             Instruction::LD(Operand::U16(a), Operand::U16(b)) => {
-                let (value, a_cycles) = self.get_u16(b);
-                let b_cycles = self.set_u16(a, value);
+                let (value, a_cycles) = self.get_u16(b)?;
+                let b_cycles = self.set_u16(a, value)?;
                 u8::max(a_cycles, b_cycles)
             }
             Instruction::LD22 => {
@@ -73,7 +75,7 @@ impl Cpu {
                 2
             }
             Instruction::LDF8 => {
-                let (signed, _cycles) = self.get_u8(OperandU8::Immediate);
+                let (signed, _cycles) = self.get_u8(OperandU8::Immediate)?;
                 self.registers.set_u16(
                     &RegisterU16::HL,
                     self.registers.sp.wrapping_add_signed(u8_to_i16(signed)),
@@ -81,12 +83,12 @@ impl Cpu {
                 3
             }
             Instruction::LDH(a, b) => {
-                let (b, b_cycles) = self.get_u8(b);
-                let a_cycles = self.set_u8(a, b);
+                let (b, b_cycles) = self.get_u8(b)?;
+                let a_cycles = self.set_u8(a, b)?;
                 u8::max(a_cycles, b_cycles) + 1
             }
             Instruction::INC(Operand::U8(a)) => {
-                let (val, _) = self.get_u8(a.clone());
+                let (val, _) = self.get_u8(a.clone())?;
                 let res = Alu::add_u8(
                     &mut self.registers,
                     val,
@@ -94,7 +96,7 @@ impl Cpu {
                     false,
                     Flags::All as u8 ^ Flags::CY as u8,
                 );
-                self.set_u8(a.clone(), res);
+                self.set_u8(a.clone(), res)?;
                 match a {
                     OperandU8::Memory(_) => 3,
                     OperandU8::Register(_) => 1,
@@ -106,7 +108,7 @@ impl Cpu {
                 2
             }
             Instruction::DEC(Operand::U8(a)) => {
-                let (val, _) = self.get_u8(a.clone());
+                let (val, _) = self.get_u8(a.clone())?;
                 let res = Alu::sub(
                     &mut self.registers,
                     val,
@@ -114,7 +116,7 @@ impl Cpu {
                     false,
                     Flags::All as u8 ^ Flags::CY as u8,
                 );
-                self.set_u8(a.clone(), res);
+                self.set_u8(a.clone(), res)?;
                 match a {
                     OperandU8::Memory(_) => 3,
                     OperandU8::Register(_) => 1,
@@ -126,8 +128,8 @@ impl Cpu {
                 2
             }
             Instruction::ADD(Operand::U8(a), Operand::U8(b)) => {
-                let (a, _) = self.get_u8(a);
-                let (b, b_cycles) = self.get_u8(b);
+                let (a, _) = self.get_u8(a)?;
+                let (b, b_cycles) = self.get_u8(b)?;
                 self.registers.a = Alu::add_u8(&mut self.registers, a, b, false, Flags::All as u8);
                 b_cycles
             }
@@ -136,52 +138,52 @@ impl Cpu {
                     OperandU16::RegisterPair(r) => r,
                     _ => unreachable!(),
                 };
-                let (b, _) = self.get_u16(b);
+                let (b, _) = self.get_u16(b)?;
                 Alu::add_u16(&mut self.registers, &r, b, false, Flags::All as u8);
                 2
             }
             Instruction::ADC(a, b) => {
                 let cy = self.registers.get_flag(Flags::CY);
-                let (a, _) = self.get_u8(a);
-                let (b, b_cycles) = self.get_u8(b);
+                let (a, _) = self.get_u8(a)?;
+                let (b, b_cycles) = self.get_u8(b)?;
                 self.registers.a = Alu::add_u8(&mut self.registers, a, b, cy, Flags::All as u8);
                 b_cycles
             }
             Instruction::SUB(a, b) => {
-                let (a, _) = self.get_u8(a);
-                let (b, b_cycles) = self.get_u8(b);
+                let (a, _) = self.get_u8(a)?;
+                let (b, b_cycles) = self.get_u8(b)?;
                 self.registers.a = Alu::sub(&mut self.registers, a, b, false, Flags::All as u8);
                 b_cycles
             }
             Instruction::SBC(a, b) => {
                 let cy = self.registers.get_flag(Flags::CY);
-                let (a, _) = self.get_u8(a);
-                let (b, b_cycles) = self.get_u8(b);
+                let (a, _) = self.get_u8(a)?;
+                let (b, b_cycles) = self.get_u8(b)?;
                 self.registers.a = Alu::sub(&mut self.registers, a, b, cy, Flags::All as u8);
                 b_cycles
             }
             Instruction::AND(_a, b) => {
-                let (b, cycles) = self.get_u8(b);
+                let (b, cycles) = self.get_u8(b)?;
                 Alu::and(&mut self.registers, b);
                 cycles
             }
             Instruction::OR(_a, b) => {
-                let (b, cycles) = self.get_u8(b);
+                let (b, cycles) = self.get_u8(b)?;
                 Alu::or(&mut self.registers, b);
                 cycles
             }
             Instruction::XOR(_a, b) => {
-                let (b, cycles) = self.get_u8(b);
+                let (b, cycles) = self.get_u8(b)?;
                 Alu::xor(&mut self.registers, b);
                 cycles
             }
             Instruction::CP(_a, b) => {
-                let (b, cycles) = self.get_u8(b);
+                let (b, cycles) = self.get_u8(b)?;
                 Alu::cmp(&mut self.registers, b);
                 cycles
             }
             Instruction::JP(condition, op) => {
-                let (addr, _cycles) = self.get_u16(op);
+                let (addr, _cycles) = self.get_u16(op)?;
                 if condition.is_none_or(|cond| self.registers.get_flag_condition(cond)) {
                     self.registers.pc = addr;
                     4
@@ -190,7 +192,7 @@ impl Cpu {
                 }
             }
             Instruction::JR(condition, op) => {
-                let (offset_u8, _cycles) = self.get_u8(op);
+                let (offset_u8, _cycles) = self.get_u8(op)?;
                 let offset = u8_to_i16(offset_u8);
                 if condition.is_none_or(|cond| self.registers.get_flag_condition(cond)) {
                     self.registers.pc = self.registers.pc.wrapping_add_signed(offset);
@@ -200,7 +202,7 @@ impl Cpu {
                 }
             }
             Instruction::CALL(condition, op) => {
-                let (addr, _cycles) = self.get_u16(op);
+                let (addr, _cycles) = self.get_u16(op)?;
                 if condition.is_none_or(|cond| self.registers.get_flag_condition(cond)) {
                     self.memory[self.registers.sp - 1] = (self.registers.pc >> 8) as u8;
                     self.memory[self.registers.sp - 2] = (self.registers.pc & 0xff) as u8;
@@ -262,68 +264,68 @@ impl Cpu {
                 3
             }
             Instruction::RLC(op) => {
-                let (val, cycles) = self.get_u8(op.clone());
+                let (val, cycles) = self.get_u8(op.clone())?;
                 let res = Alu::rotate(&mut self.registers, Direction::Left, val, true);
-                self.set_u8(op, res);
+                self.set_u8(op, res)?;
                 cycles * 2
             }
             Instruction::RRC(op) => {
-                let (val, cycles) = self.get_u8(op.clone());
+                let (val, cycles) = self.get_u8(op.clone())?;
                 let res = Alu::rotate(&mut self.registers, Direction::Right, val, true);
-                self.set_u8(op, res);
+                self.set_u8(op, res)?;
                 cycles * 2
             }
             Instruction::RL(op) => {
-                let (val, cycles) = self.get_u8(op.clone());
+                let (val, cycles) = self.get_u8(op.clone())?;
                 let res = Alu::rotate(&mut self.registers, Direction::Left, val, false);
-                self.set_u8(op, res);
+                self.set_u8(op, res)?;
                 cycles * 2
             }
             Instruction::RR(op) => {
-                let (val, cycles) = self.get_u8(op.clone());
+                let (val, cycles) = self.get_u8(op.clone())?;
                 let res = Alu::rotate(&mut self.registers, Direction::Right, val, false);
-                self.set_u8(op, res);
+                self.set_u8(op, res)?;
                 cycles * 2
             }
             Instruction::SLA(op) => {
-                let (val, cycles) = self.get_u8(op.clone());
+                let (val, cycles) = self.get_u8(op.clone())?;
                 let res = Alu::shift(&mut self.registers, Direction::Left, val, false);
-                self.set_u8(op, res);
+                self.set_u8(op, res)?;
                 cycles * 2
             }
             Instruction::SRL(op) => {
-                let (val, cycles) = self.get_u8(op.clone());
+                let (val, cycles) = self.get_u8(op.clone())?;
                 let res = Alu::shift(&mut self.registers, Direction::Right, val, false);
-                self.set_u8(op, res);
+                self.set_u8(op, res)?;
                 cycles * 2
             }
             Instruction::SRA(op) => {
-                let (val, cycles) = self.get_u8(op.clone());
+                let (val, cycles) = self.get_u8(op.clone())?;
                 let res = Alu::shift(&mut self.registers, Direction::Right, val, true);
-                self.set_u8(op, res);
+                self.set_u8(op, res)?;
                 cycles * 2
             }
             Instruction::SWAP(op) => {
-                let (val, cycles) = self.get_u8(op.clone());
+                let (val, cycles) = self.get_u8(op.clone())?;
                 let res = Alu::swap(&mut self.registers, val);
-                self.set_u8(op, res);
+                self.set_u8(op, res)?;
                 cycles * 2
             }
             Instruction::BIT(bit, op) => {
-                let (val, cycles) = self.get_u8(op.clone());
+                let (val, cycles) = self.get_u8(op.clone())?;
                 Alu::flip_bit(&mut self.registers, bit, val);
                 cycles + 1
             }
             Instruction::RES(bit, op) => {
-                let (val, cycles) = self.get_u8(op.clone());
+                let (val, cycles) = self.get_u8(op.clone())?;
                 let res = Alu::set_bit(bit, val, false);
-                self.set_u8(op, res);
+                self.set_u8(op, res)?;
                 cycles * 2
             }
             Instruction::SET(bit, op) => {
-                let (val, cycles) = self.get_u8(op.clone());
+                let (val, cycles) = self.get_u8(op.clone())?;
                 let res = Alu::set_bit(bit, val, true);
-                self.set_u8(op, res);
+                self.set_u8(op, res)?;
                 cycles * 2
             }
             Instruction::EI => {
@@ -345,10 +347,12 @@ impl Cpu {
             }
             _ => unimplemented!("not implemented {byte:x}: {instruction:?}"),
         };
+
+        Ok(instruction)
     }
 
-    fn get_u16(&mut self, op: OperandU16) -> (u16, u8) {
-        match op {
+    fn get_u16(&mut self, op: OperandU16) -> Result<(u16, u8)> {
+        Ok(match op {
             OperandU16::RegisterPair(r) => (self.registers.get_u16(&r), 2),
             OperandU16::Immediate => {
                 self.registers.pc += 2;
@@ -358,53 +362,53 @@ impl Cpu {
                     3,
                 )
             }
-        }
+        })
     }
-    fn set_u16(&mut self, op: OperandU16, value: u16) -> u8 {
-        match op {
+    fn set_u16(&mut self, op: OperandU16, value: u16) -> Result<u8> {
+        Ok(match op {
             OperandU16::RegisterPair(r) => {
                 self.registers.set_u16(&r, value);
                 2
             }
             OperandU16::Immediate => unreachable!("cannot write to immediate"),
-        }
+        })
     }
 
-    fn get_u8(&mut self, op: OperandU8) -> (u8, u8) {
-        match op {
+    fn get_u8(&mut self, op: OperandU8) -> Result<(u8, u8)> {
+        Ok(match op {
             OperandU8::Register(r) => (self.registers.get_u8(&r), 1),
             OperandU8::Immediate => {
                 self.registers.pc += 1;
                 (self.memory[self.registers.pc - 1], 2)
             }
             OperandU8::Memory(addr) => {
-                let (a, cycles) = self.get_u16(addr);
+                let (a, cycles) = self.get_u16(addr)?;
                 (self.memory[a], cycles)
             }
             OperandU8::MemoryU8(offset) => {
-                let (a, cycles) = self.get_u8(*offset);
+                let (a, cycles) = self.get_u8(*offset)?;
                 (self.memory[0xff00 | a as u16], cycles)
             }
-        }
+        })
     }
-    fn set_u8(&mut self, op: OperandU8, value: u8) -> u8 {
-        match op {
+    fn set_u8(&mut self, op: OperandU8, value: u8) -> Result<u8> {
+        Ok(match op {
             OperandU8::Register(r) => {
                 self.registers.set_u8(&r, value);
                 1
             }
             OperandU8::Immediate => unreachable!("cannot write to immediate"),
             OperandU8::Memory(addr) => {
-                let (a, cycles) = self.get_u16(addr);
+                let (a, cycles) = self.get_u16(addr)?;
                 self.memory[a] = value;
                 cycles
             }
             OperandU8::MemoryU8(offset) => {
-                let (a, cycles) = self.get_u8(*offset);
+                let (a, cycles) = self.get_u8(*offset)?;
                 self.memory[0xff00 | a as u16] = value;
                 cycles
             }
-        }
+        })
     }
 }
 

@@ -35,7 +35,7 @@ pub(crate) enum FlagCondition {
 }
 
 #[allow(clippy::upper_case_acronyms)]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) enum Instruction {
     NOP,
     LD(Operand, Operand),
