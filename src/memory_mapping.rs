@@ -2,10 +2,12 @@ use std::ops::{Index, IndexMut};
 
 use anyhow::{Result, bail};
 
+use crate::graphics::Graphics;
+
 #[derive(Debug)]
 pub(crate) struct MemoryMapping {
     pub rom: Rom,
-    pub vram: [u8; 0x2000],
+    pub vram: Graphics,
     pub external_ram: [u8; 0x2000],
     pub wram: WRam,
     pub stack: [u8; 0x7F],
@@ -15,7 +17,7 @@ impl Default for MemoryMapping {
     fn default() -> Self {
         Self {
             rom: Rom::default(),
-            vram: [0; 0x2000],
+            vram: Graphics::new(),
             external_ram: [0; 0x2000],
             wram: WRam::default(),
             stack: [0; 0x7F],
@@ -27,9 +29,10 @@ impl MemoryMapping {
     pub fn get(&self, index: u16) -> Result<&u8> {
         Ok(match index {
             0x0..=0x7FFF => &self.rom[index],
-            0x8000..=0x9FFF => &self.vram[index as usize - 0x8000],
+            0x8000..=0x9FFF => &self.vram[index - 0x8000],
             0xA000..=0xBFFF => &self.external_ram[index as usize - 0xA000],
             0xC000..=0xDFFF => &self.wram[index - 0xC000],
+            0xFF40 => &self.vram.lcd_control,
             0xFF70 => &self.wram.bank_select,
             0xFF80..=0xFFFE => &self.stack[index as usize - 0xFF80],
             _ => {
@@ -43,9 +46,10 @@ impl MemoryMapping {
             0x0..=0x7FFF => {
                 bail!("cannot write to rom: {:x}", index);
             }
-            0x8000..=0x9FFF => &mut self.vram[index as usize - 0x8000],
+            0x8000..=0x9FFF => &mut self.vram[index - 0x8000],
             0xA000..=0xBFFF => &mut self.external_ram[index as usize - 0xA000],
             0xC000..=0xDFFF => &mut self.wram[index - 0xC000],
+            0xFF40 => &mut self.vram.lcd_control,
             0xFF70 => &mut self.wram.bank_select,
             0xFF80..=0xFFFE => &mut self.stack[index as usize - 0xFF80],
             _ => {

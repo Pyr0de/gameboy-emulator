@@ -1,5 +1,6 @@
 mod cli;
 mod cpu;
+mod graphics;
 mod instructions;
 mod memory_mapping;
 mod registers;
