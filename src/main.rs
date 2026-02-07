@@ -1,15 +1,13 @@
 mod cli;
 mod cpu;
+mod debugger;
 mod graphics;
 mod instructions;
 mod memory_mapping;
 mod registers;
+mod sdl;
 
-use std::{
-    fs::File,
-    io::{Read, stdin},
-    process::exit,
-};
+use std::{fs::File, io::Read, process::exit};
 
 use anyhow::Error;
 
@@ -18,10 +16,11 @@ use crate::{
     cpu::Cpu,
     instructions::Instruction,
     memory_mapping::{MemoryMapping, Rom},
+    sdl::SdlInstance,
 };
 
 fn gameboy_emulator(args: Args) -> Result<(), Error> {
-    let mut file = File::open(args.file)?;
+    let mut file = File::open(&args.file)?;
     let mut buffer = Vec::new();
 
     file.read_to_end(&mut buffer)?;
@@ -32,7 +31,20 @@ fn gameboy_emulator(args: Args) -> Result<(), Error> {
 
     let mut cpu = Cpu::new(memory);
 
-    loop {
+    let window_name = format!("Emulator: {}", args.file.to_str().unwrap_or(""));
+
+    let mut sdl = SdlInstance::new(&window_name)?;
+    let texture_creator = sdl.canvas.texture_creator();
+    let mut renderer =
+        imgui_sdl3_renderer::Renderer::new(&texture_creator, &mut sdl.debugger.imgui_context)?;
+
+    'main: loop {
+        // Handle sdl events
+        if sdl.handle_event() {
+            break 'main;
+        }
+
+        // Run execute instruction
         let instruction = match cpu.run_instruction() {
             Ok(i) => i,
             Err(err) => {
@@ -45,15 +57,12 @@ fn gameboy_emulator(args: Args) -> Result<(), Error> {
             }
         };
 
-        if args.debug {
-            let mut _in = String::new();
-            eprintln!("{:?}\n{:x?}", instruction, cpu.registers);
-            stdin().read_line(&mut _in).expect("Failed to read line");
-        }
-
         if let Instruction::STOP(_) = instruction {
             break;
         }
+
+        // Update graphics
+        sdl.update_graphics(&mut renderer)?;
     }
 
     Ok(())
