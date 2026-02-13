@@ -24,21 +24,25 @@ impl Cpu {
         }
     }
 
-    pub(crate) fn run_instruction(&mut self) -> Result<Instruction> {
+    pub(crate) fn get_instruction(&self) -> Result<(Instruction, u16)> {
+        let byte = *self.memory.get(self.registers.pc)?;
+        Ok(match byte {
+            0xCB => {
+                (instructions::cbprefixed::decode_byte(*self.memory.get(self.registers.pc+1)?), 2)
+            },
+            _ => (instructions::unprefixed::decode_byte(byte), 1),
+        })
+    }
+
+    pub(crate) fn run_instruction(&mut self, instruction: Instruction, inc: u16) -> Result<()> {
         // EI is delayed by 1 instruction
         if self.set_ime {
             self.set_ime = false;
             self.ime = true;
         }
 
-        let byte = *self.memory.get(self.registers.pc)?;
-        self.registers.pc += 1;
-        let instruction = match byte {
-            0xCB => instructions::cbprefixed::decode_byte(*self.memory.get(self.registers.pc)?),
-            _ => instructions::unprefixed::decode_byte(byte),
-        };
-
-        let _cycles = match instruction.clone() {
+        self.registers.pc += inc;
+        let _cycles = match instruction {
             Instruction::NOP => 1,
             Instruction::LD(Operand::U8(a), Operand::U8(b)) => {
                 let (value, a_cycles) = self.get_u8(b)?;
@@ -345,10 +349,10 @@ impl Cpu {
                 self.registers.pc = addr;
                 4
             }
-            _ => bail!("not implemented {byte:x}: {instruction:?}"),
+            _ => bail!("not implemented: {instruction:?}"),
         };
 
-        Ok(instruction)
+        Ok(())
     }
 
     fn get_u16(&mut self, op: OperandU16) -> Result<(u16, u8)> {

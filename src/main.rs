@@ -41,16 +41,17 @@ fn gameboy_emulator(args: Args) -> Result<(), Error> {
         }
 
         // Run execute instruction
-        let instruction = match cpu.run_instruction() {
-            Ok(i) => i,
-            Err(err) => {
+        let (instruction, inc) = cpu.get_instruction()?;
+        match cpu.run_instruction(instruction.clone(), inc) {
+            Err(e) => {
                 if args.debug {
-                    eprintln!("{err:?}");
+                    eprintln!("{e:?}");
                     continue;
-                } else {
-                    return Err(err);
+                }else {
+                    return Err(e)
                 }
             }
+            _ => {}
         };
 
         if let Instruction::STOP(_) = instruction {
