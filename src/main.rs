@@ -34,6 +34,9 @@ fn gameboy_emulator(args: Args) -> Result<(), Error> {
     let mut renderer =
         imgui_sdl3_renderer::Renderer::new(&texture_creator, &mut sdl.debugger.imgui_context)?;
 
+    let mut pause = false;
+    let mut step = false;
+
     'main: loop {
         // Handle sdl events
         if sdl.handle_event() {
@@ -42,24 +45,36 @@ fn gameboy_emulator(args: Args) -> Result<(), Error> {
 
         // Run execute instruction
         let (instruction, inc) = cpu.get_instruction()?;
-        match cpu.run_instruction(instruction.clone(), inc) {
-            Err(e) => {
-                if args.debug {
-                    eprintln!("{e:?}");
-                    continue;
-                }else {
-                    return Err(e)
-                }
-            }
-            _ => {}
-        };
 
-        if let Instruction::STOP(_) = instruction {
-            break;
+        if !pause || step {
+            match cpu.run_instruction(instruction.clone(), inc) {
+                Err(e) => {
+                    if args.debug {
+                        eprintln!("{e:?}");
+                        continue;
+                    }else {
+                        return Err(e)
+                    }
+                }
+                _ => {}
+            };
+
+            if let Instruction::STOP(_) = instruction {
+                break;
+            }
         }
 
         // Update graphics
         sdl.update_graphics(&mut renderer, |ui| {
+            ui.window("Execution")
+                .size([400., 100.], imgui::Condition::FirstUseEver)
+                .build(|| {
+                    ui.checkbox("Pause", &mut pause);
+                    step = ui.button("Step");
+                    if pause {
+                        ui.text(format!("Next Instruction: {instruction:?}"));
+                    }
+                });
             cpu.registers.display_debugger(ui);
         })?;
     }
