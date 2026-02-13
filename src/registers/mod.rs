@@ -2,8 +2,9 @@
 
 mod alu;
 
-use crate::instructions::FlagCondition;
+use crate::{debugger::DisplayDebugger, instructions::FlagCondition};
 pub use alu::{Alu, Direction};
+use imgui::*;
 
 #[derive(Debug, Default)]
 #[allow(unused)]
@@ -158,5 +159,46 @@ impl Registers {
             RegisterU8::L => &mut self.l,
         };
         *r = val;
+    }
+}
+
+impl DisplayDebugger for Registers {
+    fn display_debugger(&self, ui: &Ui) where Self:Sized {
+        ui.window("Registers")
+            .size([300., 300.], imgui::Condition::FirstUseEver)
+            .build(|| {
+                
+                if let Some(_t) = ui.begin_table("Register", 2) {
+                    ui.table_setup_column("Register");
+                    ui.table_setup_column("Value");
+                    ui.table_headers_row();
+
+                    fn add_column_u8(ui: &Ui, reg: &str, val: u8) {
+                        ui.table_next_row();
+                        ui.table_set_column_index(0);
+                        ui.text(reg);
+                        ui.table_set_column_index(1);
+                        ui.text(format!("{:#04x}", val));
+                    }
+                    fn add_column_u16(ui: &Ui, reg: &str, val: u16) {
+                        ui.table_next_row();
+                        ui.table_set_column_index(0);
+                        ui.text(reg);
+                        ui.table_set_column_index(1);
+                        ui.text(format!("{:#06x}", val));
+                    }
+
+                    add_column_u8(ui, "A", self.a);
+                    add_column_u8(ui, "B", self.b);
+                    add_column_u8(ui, "C", self.c);
+                    add_column_u8(ui, "D", self.d);
+                    add_column_u8(ui, "E", self.e);
+                    add_column_u8(ui, "H", self.h);
+                    add_column_u8(ui, "L", self.l);
+                    add_column_u8(ui, "F", self.f);
+                    add_column_u16(ui, "SP", self.sp);
+                    add_column_u16(ui, "PC", self.pc);
+                }
+            });
     }
 }

@@ -1,8 +1,12 @@
 use anyhow::Result;
-use imgui::Context;
+use imgui::{Context, Ui};
 use imgui_sdl3_renderer::Renderer;
 use imgui_sdl3_support::SdlPlatform;
 use sdl3::{render::Canvas, video::Window};
+
+pub trait DisplayDebugger {
+    fn display_debugger(&self, ui: &Ui) where Self:Sized;
+}
 
 pub struct Debugger {
     pub imgui_context: Context,
@@ -16,7 +20,7 @@ impl Debugger {
 
         imgui_context
             .fonts()
-            .add_font(&[imgui::FontSource::DefaultFontData { config: None }]);
+            .add_font(&[imgui::FontSource::DefaultFontData { config: Some(imgui::FontConfig {..Default::default() }) }]);
 
         let platform = SdlPlatform::new(&mut imgui_context);
 
@@ -26,16 +30,18 @@ impl Debugger {
         })
     }
 
-    pub fn update_graphics(
+    pub fn update_graphics<F: FnOnce(&Ui)>(
         &mut self,
         renderer: &mut Renderer,
         canvas: &mut Canvas<Window>,
+        callback: F
     ) -> Result<()> {
         let ui = self.imgui_context.new_frame();
-        ui.show_demo_window(&mut true);
+        callback(&ui);
 
         renderer.render(self.imgui_context.render(), canvas)?;
 
         Ok(())
     }
 }
+

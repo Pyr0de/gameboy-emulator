@@ -12,11 +12,7 @@ use std::{fs::File, io::Read, process::exit};
 use anyhow::Error;
 
 use crate::{
-    cli::Args,
-    cpu::Cpu,
-    instructions::Instruction,
-    memory_mapping::{MemoryMapping, Rom},
-    sdl::SdlInstance,
+    cli::Args, cpu::Cpu, debugger::DisplayDebugger, instructions::Instruction, memory_mapping::{MemoryMapping, Rom}, sdl::SdlInstance
 };
 
 fn gameboy_emulator(args: Args) -> Result<(), Error> {
@@ -62,7 +58,9 @@ fn gameboy_emulator(args: Args) -> Result<(), Error> {
         }
 
         // Update graphics
-        sdl.update_graphics(&mut renderer)?;
+        sdl.update_graphics(&mut renderer, |ui| {
+            cpu.registers.display_debugger(ui);
+        })?;
     }
 
     Ok(())
