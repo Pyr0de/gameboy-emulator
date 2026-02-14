@@ -12,7 +12,12 @@ use std::{fs::File, io::Read, process::exit};
 use anyhow::Error;
 
 use crate::{
-    cli::Args, cpu::Cpu, debugger::DisplayDebugger, instructions::Instruction, memory_mapping::{MemoryMapping, Rom}, sdl::SdlInstance
+    cli::Args,
+    cpu::Cpu,
+    debugger::DisplayDebugger,
+    instructions::Instruction,
+    memory_mapping::{MemoryMapping, Rom},
+    sdl::SdlInstance,
 };
 
 fn gameboy_emulator(args: Args) -> Result<(), Error> {
@@ -20,10 +25,7 @@ fn gameboy_emulator(args: Args) -> Result<(), Error> {
     let mut buffer = Vec::new();
 
     file.read_to_end(&mut buffer)?;
-    let memory = MemoryMapping {
-        rom: Rom { rom: buffer },
-        ..Default::default()
-    };
+    let memory = MemoryMapping::new(Rom { rom: buffer });
 
     let mut cpu = Cpu::new(memory);
 
@@ -52,8 +54,8 @@ fn gameboy_emulator(args: Args) -> Result<(), Error> {
                 if args.debug {
                     sdl.debugger.errors.push((pc, format!("{e:?}")));
                     continue;
-                }else {
-                    return Err(e)
+                } else {
+                    return Err(e);
                 }
             }
 
@@ -67,6 +69,7 @@ fn gameboy_emulator(args: Args) -> Result<(), Error> {
             ui.window("Execution")
                 .size([400., 100.], imgui::Condition::FirstUseEver)
                 .build(|| {
+                    ui.text(format!("{} fps", ui.io().framerate as usize));
                     ui.checkbox("Pause", &mut pause);
                     step = ui.button("Step");
                     if pause {
@@ -74,6 +77,7 @@ fn gameboy_emulator(args: Args) -> Result<(), Error> {
                     }
                 });
             cpu.registers.display_debugger(ui);
+            cpu.memory.display_debugger(ui, cpu.registers.pc);
         })?;
     }
 

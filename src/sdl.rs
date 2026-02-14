@@ -1,7 +1,12 @@
 use anyhow::Result;
 use imgui::Ui;
 use imgui_sdl3_renderer::Renderer;
-use sdl3::{EventPump, Sdl, event::Event, render::Canvas, video::{SwapInterval, Window}};
+use sdl3::{
+    EventPump, Sdl,
+    event::Event,
+    render::Canvas,
+    video::{SwapInterval, Window},
+};
 
 use crate::debugger::Debugger;
 
@@ -53,7 +58,11 @@ impl SdlInstance {
         false
     }
 
-    pub fn update_graphics<F: FnOnce(&Ui)>(&mut self, renderer: &mut Renderer, callback: F) -> Result<()> {
+    pub fn update_graphics<F: FnOnce(&Ui)>(
+        &mut self,
+        renderer: &mut Renderer,
+        callback: F,
+    ) -> Result<()> {
         self.debugger.platform.prepare_frame(
             &mut self.sdl_context,
             &mut self.debugger.imgui_context,
@@ -64,7 +73,8 @@ impl SdlInstance {
         self.canvas.clear();
 
         // Emulator graphics
-        self.debugger.update_graphics(renderer, &mut self.canvas, callback)?;
+        self.debugger
+            .update_graphics(renderer, &mut self.canvas, callback)?;
 
         self.canvas.present();
 

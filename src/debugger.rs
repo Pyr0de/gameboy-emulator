@@ -11,7 +11,7 @@ pub trait DisplayDebugger {
 pub struct Debugger {
     pub imgui_context: Context,
     pub platform: SdlPlatform,
-    
+
     pub errors: Vec<(u16, String)>,
 }
 
@@ -22,7 +22,11 @@ impl Debugger {
 
         imgui_context
             .fonts()
-            .add_font(&[imgui::FontSource::DefaultFontData { config: Some(imgui::FontConfig {..Default::default() }) }]);
+            .add_font(&[imgui::FontSource::DefaultFontData {
+                config: Some(imgui::FontConfig {
+                    ..Default::default()
+                }),
+            }]);
 
         let platform = SdlPlatform::new(&mut imgui_context);
 
@@ -37,7 +41,7 @@ impl Debugger {
         &mut self,
         renderer: &mut Renderer,
         canvas: &mut Canvas<Window>,
-        callback: F
+        callback: F,
     ) -> Result<()> {
         let ui = self.imgui_context.new_frame();
         callback(ui);
@@ -57,4 +61,3 @@ impl Debugger {
         Ok(())
     }
 }
-

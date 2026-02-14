@@ -27,9 +27,10 @@ impl Cpu {
     pub(crate) fn get_instruction(&self) -> Result<(Instruction, u16)> {
         let byte = *self.memory.get(self.registers.pc)?;
         Ok(match byte {
-            0xCB => {
-                (instructions::cbprefixed::decode_byte(*self.memory.get(self.registers.pc+1)?), 2)
-            },
+            0xCB => (
+                instructions::cbprefixed::decode_byte(*self.memory.get(self.registers.pc + 1)?),
+                2,
+            ),
             _ => (instructions::unprefixed::decode_byte(byte), 1),
         })
     }

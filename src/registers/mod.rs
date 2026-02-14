@@ -168,7 +168,6 @@ impl DisplayDebugger for Registers {
             .position([50., 200.], imgui::Condition::FirstUseEver)
             .always_auto_resize(true)
             .build(|| {
-                
                 if let Some(_t) = ui.begin_table("Register", 2) {
                     ui.table_setup_column("Register");
                     ui.table_setup_column("Value (0x)");
