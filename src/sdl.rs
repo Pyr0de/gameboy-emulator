@@ -1,7 +1,7 @@
 use anyhow::Result;
 use imgui::Ui;
 use imgui_sdl3_renderer::Renderer;
-use sdl3::{EventPump, Sdl, event::Event, render::Canvas, video::Window};
+use sdl3::{EventPump, Sdl, event::Event, render::Canvas, video::{SwapInterval, Window}};
 
 use crate::debugger::Debugger;
 
@@ -28,6 +28,8 @@ impl SdlInstance {
 
         let canvas = window.into_canvas();
         let event_pump = sdl_context.event_pump()?;
+
+        video_subsystem.gl_set_swap_interval(SwapInterval::VSync)?;
 
         Ok(Self {
             sdl_context,
