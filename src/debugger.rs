@@ -5,7 +5,7 @@ use imgui_sdl3_support::SdlPlatform;
 use sdl3::{render::Canvas, video::Window};
 
 pub trait DisplayDebugger {
-    fn display_debugger(&self, ui: &Ui) where Self:Sized;
+    fn display_debugger(&self, ui: &Ui);
 }
 
 pub struct Debugger {
@@ -37,7 +37,7 @@ impl Debugger {
         callback: F
     ) -> Result<()> {
         let ui = self.imgui_context.new_frame();
-        callback(&ui);
+        callback(ui);
 
         renderer.render(self.imgui_context.render(), canvas)?;
 

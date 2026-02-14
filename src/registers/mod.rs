@@ -163,7 +163,7 @@ impl Registers {
 }
 
 impl DisplayDebugger for Registers {
-    fn display_debugger(&self, ui: &Ui) where Self:Sized {
+    fn display_debugger(&self, ui: &Ui) {
         ui.window("Registers")
             .position([50., 200.], imgui::Condition::FirstUseEver)
             .always_auto_resize(true)

@@ -55,7 +55,7 @@ impl SdlInstance {
         self.debugger.platform.prepare_frame(
             &mut self.sdl_context,
             &mut self.debugger.imgui_context,
-            &self.canvas.window(),
+            self.canvas.window(),
             &self.event_pump,
         );
 

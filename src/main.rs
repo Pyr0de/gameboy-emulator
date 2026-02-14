@@ -47,17 +47,14 @@ fn gameboy_emulator(args: Args) -> Result<(), Error> {
         let (instruction, inc) = cpu.get_instruction()?;
 
         if !pause || step {
-            match cpu.run_instruction(instruction.clone(), inc) {
-                Err(e) => {
-                    if args.debug {
-                        eprintln!("{e:?}");
-                        continue;
-                    }else {
-                        return Err(e)
-                    }
+            if let Err(e) = cpu.run_instruction(instruction.clone(), inc) {
+                if args.debug {
+                    eprintln!("{e:?}");
+                    continue;
+                }else {
+                    return Err(e)
                 }
-                _ => {}
-            };
+            }
 
             if let Instruction::STOP(_) = instruction {
                 break;
