@@ -11,6 +11,8 @@ pub trait DisplayDebugger {
 pub struct Debugger {
     pub imgui_context: Context,
     pub platform: SdlPlatform,
+    
+    pub errors: Vec<(u16, String)>,
 }
 
 impl Debugger {
@@ -27,6 +29,7 @@ impl Debugger {
         Ok(Debugger {
             imgui_context,
             platform,
+            errors: Vec::new(),
         })
     }
 
@@ -38,6 +41,16 @@ impl Debugger {
     ) -> Result<()> {
         let ui = self.imgui_context.new_frame();
         callback(ui);
+
+        ui.window("Errors")
+            .position([500., 50.], imgui::Condition::FirstUseEver)
+            .size([300., 200.], imgui::Condition::FirstUseEver)
+            .horizontal_scrollbar(true)
+            .build(|| {
+                for (pc, err) in &self.errors {
+                    ui.text(format!("PC: 0x{pc:04x} -> {err}"));
+                }
+            });
 
         renderer.render(self.imgui_context.render(), canvas)?;
 

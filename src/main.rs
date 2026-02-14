@@ -34,7 +34,7 @@ fn gameboy_emulator(args: Args) -> Result<(), Error> {
     let mut renderer =
         imgui_sdl3_renderer::Renderer::new(&texture_creator, &mut sdl.debugger.imgui_context)?;
 
-    let mut pause = false;
+    let mut pause = true;
     let mut step = false;
 
     'main: loop {
@@ -47,9 +47,10 @@ fn gameboy_emulator(args: Args) -> Result<(), Error> {
         let (instruction, inc) = cpu.get_instruction()?;
 
         if !pause || step {
+            let pc = cpu.registers.pc;
             if let Err(e) = cpu.run_instruction(instruction.clone(), inc) {
                 if args.debug {
-                    eprintln!("{e:?}");
+                    sdl.debugger.errors.push((pc, format!("{e:?}")));
                     continue;
                 }else {
                     return Err(e)
