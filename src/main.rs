@@ -29,7 +29,7 @@ fn gameboy_emulator(args: Args) -> Result<(), Error> {
 
     let window_name = format!("Emulator: {}", args.file.to_str().unwrap_or(""));
 
-    let mut sdl = SdlInstance::new(&window_name)?;
+    let mut sdl = SdlInstance::new(&window_name, 1600, 900)?;
     let texture_creator = sdl.canvas.texture_creator();
     let mut renderer =
         imgui_sdl3_renderer::Renderer::new(&texture_creator, &mut sdl.debugger.imgui_context)?;

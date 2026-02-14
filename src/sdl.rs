@@ -14,12 +14,12 @@ pub struct SdlInstance {
 }
 
 impl SdlInstance {
-    pub fn new(window_name: &str) -> Result<Self> {
+    pub fn new(window_name: &str, width: u32, height: u32) -> Result<Self> {
         let sdl_context = sdl3::init()?;
         let video_subsystem = sdl_context.video()?;
 
         let window = video_subsystem
-            .window(window_name, 800, 600)
+            .window(window_name, width, height)
             .opengl()
             .position_centered()
             .resizable()

@@ -165,12 +165,13 @@ impl Registers {
 impl DisplayDebugger for Registers {
     fn display_debugger(&self, ui: &Ui) where Self:Sized {
         ui.window("Registers")
-            .size([300., 300.], imgui::Condition::FirstUseEver)
+            .position([50., 200.], imgui::Condition::FirstUseEver)
+            .always_auto_resize(true)
             .build(|| {
                 
                 if let Some(_t) = ui.begin_table("Register", 2) {
                     ui.table_setup_column("Register");
-                    ui.table_setup_column("Value");
+                    ui.table_setup_column("Value (0x)");
                     ui.table_headers_row();
 
                     fn add_column_u8(ui: &Ui, reg: &str, val: u8) {
@@ -178,14 +179,14 @@ impl DisplayDebugger for Registers {
                         ui.table_set_column_index(0);
                         ui.text(reg);
                         ui.table_set_column_index(1);
-                        ui.text(format!("{:#04x}", val));
+                        ui.text(format!("{:02x}", val));
                     }
                     fn add_column_u16(ui: &Ui, reg: &str, val: u16) {
                         ui.table_next_row();
                         ui.table_set_column_index(0);
                         ui.text(reg);
                         ui.table_set_column_index(1);
-                        ui.text(format!("{:#06x}", val));
+                        ui.text(format!("{:04x}", val));
                     }
 
                     add_column_u8(ui, "A", self.a);
