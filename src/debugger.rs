@@ -4,10 +4,6 @@ use imgui_sdl3_renderer::Renderer;
 use imgui_sdl3_support::SdlPlatform;
 use sdl3::{render::Canvas, video::Window};
 
-pub trait DisplayDebugger {
-    fn display_debugger(&self, ui: &Ui);
-}
-
 pub struct Debugger {
     pub imgui_context: Context,
     pub platform: SdlPlatform,

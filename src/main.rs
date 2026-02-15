@@ -14,7 +14,6 @@ use anyhow::Error;
 use crate::{
     cli::Args,
     cpu::Cpu,
-    debugger::DisplayDebugger,
     instructions::Instruction,
     memory_mapping::{MemoryMapping, Rom},
     sdl::SdlInstance,
@@ -67,7 +66,7 @@ fn gameboy_emulator(args: Args) -> Result<(), Error> {
         // Update graphics
         sdl.update_graphics(&mut renderer, |ui| {
             ui.window("Execution")
-                .size([400., 100.], imgui::Condition::FirstUseEver)
+                .size([400., 150.], imgui::Condition::FirstUseEver)
                 .build(|| {
                     ui.text(format!("{} fps", ui.io().framerate as usize));
                     ui.checkbox("Pause", &mut pause);

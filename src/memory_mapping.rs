@@ -74,7 +74,8 @@ impl MemoryMapping {
                         self.debugger_starting_address = starting_address;
                     }
 
-                    if let Some(_table) = ui.begin_table_with_flags("", 17, TableFlags::SIZING_FIXED_FIT)
+                    if let Some(_table) =
+                        ui.begin_table_with_flags("", 17, TableFlags::SIZING_FIXED_FIT)
                     {
                         ui.table_setup_column("");
                         for i in 0..16 {

@@ -2,7 +2,7 @@
 
 mod alu;
 
-use crate::{debugger::DisplayDebugger, instructions::FlagCondition};
+use crate::instructions::FlagCondition;
 pub use alu::{Alu, Direction};
 use imgui::*;
 
@@ -160,12 +160,10 @@ impl Registers {
         };
         *r = val;
     }
-}
 
-impl DisplayDebugger for Registers {
-    fn display_debugger(&self, ui: &Ui) {
+    pub fn display_debugger(&self, ui: &Ui) {
         ui.window("Registers")
-            .position([50., 200.], imgui::Condition::FirstUseEver)
+            .position([50., 250.], imgui::Condition::FirstUseEver)
             .always_auto_resize(true)
             .build(|| {
                 if let Some(_t) = ui.begin_table("Register", 2) {
@@ -187,6 +185,13 @@ impl DisplayDebugger for Registers {
                         ui.table_set_column_index(1);
                         ui.text(format!("{:04x}", val));
                     }
+                    fn add_column_flag(ui: &Ui, flag: &str, val: bool) {
+                        ui.table_next_row();
+                        ui.table_set_column_index(0);
+                        ui.text(flag);
+                        ui.table_set_column_index(1);
+                        ui.text(if val { "TRUE " } else { "FALSE" });
+                    }
 
                     add_column_u8(ui, "A", self.a);
                     add_column_u8(ui, "B", self.b);
@@ -195,7 +200,15 @@ impl DisplayDebugger for Registers {
                     add_column_u8(ui, "E", self.e);
                     add_column_u8(ui, "H", self.h);
                     add_column_u8(ui, "L", self.l);
+
+                    ui.new_line();
                     add_column_u8(ui, "F", self.f);
+                    add_column_flag(ui, "Z", self.get_flag(Flags::Z));
+                    add_column_flag(ui, "N", self.get_flag(Flags::N));
+                    add_column_flag(ui, "H", self.get_flag(Flags::H));
+                    add_column_flag(ui, "CY", self.get_flag(Flags::CY));
+                    ui.new_line();
+
                     add_column_u16(ui, "SP", self.sp);
                     add_column_u16(ui, "PC", self.pc);
                 }
