@@ -6,6 +6,7 @@ mod instructions;
 mod memory_mapping;
 mod registers;
 mod sdl;
+mod interrupt;
 
 use std::{fs::File, io::Read, process::exit};
 

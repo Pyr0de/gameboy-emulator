@@ -3,7 +3,7 @@ use std::ops::{Index, IndexMut};
 use anyhow::{Result, bail};
 use imgui::{StyleColor, TableBgTarget, TableFlags};
 
-use crate::graphics::Graphics;
+use crate::{graphics::Graphics, interrupt::Interrupt};
 
 #[derive(Debug)]
 pub(crate) struct MemoryMapping {
@@ -12,6 +12,7 @@ pub(crate) struct MemoryMapping {
     pub external_ram: [u8; 0x2000],
     pub wram: WRam,
     pub stack: [u8; 0x7F],
+    pub interrupt: Interrupt,
 
     debugger_offset: i16,
     debugger_starting_address: u16,
@@ -26,6 +27,7 @@ impl Default for MemoryMapping {
             external_ram: [0; 0x2000],
             wram: WRam::default(),
             stack: [0; 0x7F],
+            interrupt: Interrupt::new(),
             debugger_offset: 0,
             debugger_starting_address: 0,
             debugger_selected: 0,
@@ -169,9 +171,11 @@ impl MemoryMapping {
             0x8000..=0x9FFF => &self.vram[index - 0x8000],
             0xA000..=0xBFFF => &self.external_ram[index as usize - 0xA000],
             0xC000..=0xDFFF => &self.wram[index - 0xC000],
+            0xFF0F => &self.interrupt.interrupt_flag,
             0xFF40 => &self.vram.lcd_control,
             0xFF70 => &self.wram.bank_select,
             0xFF80..=0xFFFE => &self.stack[index as usize - 0xFF80],
+            0xFFFF => &self.interrupt.interrupt_enable,
             _ => {
                 bail!("unimplemented memory 0x{:x}", index)
             }
@@ -186,9 +190,11 @@ impl MemoryMapping {
             0x8000..=0x9FFF => &mut self.vram[index - 0x8000],
             0xA000..=0xBFFF => &mut self.external_ram[index as usize - 0xA000],
             0xC000..=0xDFFF => &mut self.wram[index - 0xC000],
+            0xFF0F => &mut self.interrupt.interrupt_flag,
             0xFF40 => &mut self.vram.lcd_control,
             0xFF70 => &mut self.wram.bank_select,
             0xFF80..=0xFFFE => &mut self.stack[index as usize - 0xFF80],
+            0xFFFF => &mut self.interrupt.interrupt_enable,
             _ => {
                 bail!("unimplemented memory 0x{:x}", index)
             }

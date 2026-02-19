@@ -10,8 +10,6 @@ use crate::{
 pub(crate) struct Cpu {
     pub registers: Registers,
     pub memory: MemoryMapping,
-    set_ime: bool,
-    ime: bool,
 }
 
 impl Cpu {
@@ -19,8 +17,6 @@ impl Cpu {
         Cpu {
             registers: Registers::new(),
             memory,
-            set_ime: false,
-            ime: false,
         }
     }
 
@@ -36,10 +32,8 @@ impl Cpu {
     }
 
     pub(crate) fn run_instruction(&mut self, instruction: Instruction, inc: u16) -> Result<()> {
-        // EI is delayed by 1 instruction
-        if self.set_ime {
-            self.set_ime = false;
-            self.ime = true;
+        if let Some(addr) = self.memory.interrupt.handle_interrupts() {
+            self.call(addr)?;
         }
 
         self.registers.pc += inc;
@@ -328,16 +322,15 @@ impl Cpu {
                 cycles * 2
             }
             Instruction::EI => {
-                self.set_ime = true;
+                self.memory.interrupt.set_ime();
                 1
             }
             Instruction::DI => {
-                self.ime = false;
+                self.memory.interrupt.reset_ime();
                 1
             }
             Instruction::RETI => {
-                // Enables interrupts and returns (same as ei immediately followed by ret)
-                self.set_ime = true;
+                self.memory.interrupt.set_ime_forced();
                 self.ret()?;
                 4
             }
