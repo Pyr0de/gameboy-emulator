@@ -14,6 +14,7 @@ pub struct Debugger {
 impl Debugger {
     pub fn new() -> Result<Self> {
         let mut imgui_context = imgui::Context::create();
+        imgui_context.io_mut().config_flags |= imgui::ConfigFlags::NAV_ENABLE_KEYBOARD;
         imgui_context.set_ini_filename(None);
 
         imgui_context

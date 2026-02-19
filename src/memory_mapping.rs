@@ -15,6 +15,7 @@ pub(crate) struct MemoryMapping {
 
     debugger_offset: i16,
     debugger_starting_address: u16,
+    debugger_selected: u16,
 }
 
 impl Default for MemoryMapping {
@@ -27,6 +28,7 @@ impl Default for MemoryMapping {
             stack: [0; 0x7F],
             debugger_offset: 0,
             debugger_starting_address: 0,
+            debugger_selected: 0,
         }
     }
 }
@@ -41,7 +43,7 @@ impl MemoryMapping {
 
     pub fn display_debugger(&mut self, ui: &imgui::Ui, pc: u16) {
         ui.window("Memory")
-            .size([500., 500.], imgui::Condition::FirstUseEver)
+            .size([600., 600.], imgui::Condition::FirstUseEver)
             .position([500., 250.], imgui::Condition::FirstUseEver)
             .build(|| {
                 if let Some(_m) = ui.tab_bar("mem") {
@@ -85,10 +87,8 @@ impl MemoryMapping {
                         }
                         ui.table_headers_row();
 
-
                         for i in 0..256 {
-                            let mut addr =
-                                window_start as i32 + self.debugger_offset as i32 + i;
+                            let mut addr = window_start as i32 + self.debugger_offset as i32 + i;
                             if addr < u16::MIN.into() {
                                 addr = u16::MIN.into();
                                 self.debugger_offset = 0;
@@ -105,23 +105,29 @@ impl MemoryMapping {
                             }
                             ui.table_set_column_index((i % 16 + 1) as usize);
                             let val = if let Ok(val) = &self.get(addr as u16) {
-                                format!("{val:02X}")
+                                format!("{val:02X}###{addr}")
                             } else {
-                                "--".to_string()
+                                format!("--###{addr}")
                             };
                             let color = if pc == addr as u16 {
                                 [0., 1., 0., 1.]
                             } else {
                                 [1., 1., 1., 1.]
                             };
-                            
-                            if starting_address == addr as u16 {
-                                let bg_color = ui.style_color(StyleColor::HeaderActive);
-                                ui.table_set_bg_color(TableBgTarget::CELL_BG, bg_color);
-                            };
 
-                            ui.text_colored(color, val);
-                            //ui.push_style_var(style_var)
+                            {
+                                let _text_color = ui.push_style_color(StyleColor::Text, color);
+                                let _button_color = if starting_address == addr as u16 {
+                                    Some(
+                                        ui.push_style_color(StyleColor::Button, [0., 0.6, 0.8, 1.]),
+                                    )
+                                } else {
+                                    None
+                                };
+                                if ui.button(val) {
+                                    self.debugger_selected = addr as u16;
+                                }
+                            }
                         }
                     }
                     if ui.button("< Prev") {
@@ -130,6 +136,26 @@ impl MemoryMapping {
                     ui.same_line();
                     if ui.button("Next >") {
                         self.debugger_offset += 256;
+                    }
+                }
+                ui.new_line();
+                if let Ok(val) = self.get(self.debugger_selected) {
+                    ui.text(format!(
+                        "0x{:04X}: 0x{val:02X} 0b{val:08b}",
+                        self.debugger_selected
+                    ));
+
+                    if let Ok(val_mut) = self.get_mut(self.debugger_selected) {
+                        let mut str = format!("{val_mut:02X}");
+                        if ui
+                            .input_text("replace", &mut str)
+                            .enter_returns_true(true)
+                            .build()
+                        {
+                            if let Ok(n) = u8::from_str_radix(&str, 16) {
+                                *val_mut = n;
+                            }
+                        }
                     }
                 }
             });

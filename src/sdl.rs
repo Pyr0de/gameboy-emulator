@@ -31,6 +31,8 @@ impl SdlInstance {
             .high_pixel_density()
             .build()?;
 
+        video_subsystem.text_input().start(&window);
+
         let canvas = window.into_canvas();
         let event_pump = sdl_context.event_pump()?;
 
@@ -49,7 +51,6 @@ impl SdlInstance {
             self.debugger
                 .platform
                 .handle_event(&mut self.debugger.imgui_context, &event);
-
             if let Event::Quit { .. } = event {
                 return true;
             }
