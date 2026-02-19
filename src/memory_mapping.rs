@@ -1,7 +1,7 @@
 use std::ops::{Index, IndexMut};
 
 use anyhow::{Result, bail};
-use imgui::TableFlags;
+use imgui::{StyleColor, TableBgTarget, TableFlags};
 
 use crate::graphics::Graphics;
 
@@ -74,6 +74,8 @@ impl MemoryMapping {
                         self.debugger_starting_address = starting_address;
                     }
 
+                    let window_start = (starting_address / 256) * 256;
+
                     if let Some(_table) =
                         ui.begin_table_with_flags("", 17, TableFlags::SIZING_FIXED_FIT)
                     {
@@ -83,9 +85,10 @@ impl MemoryMapping {
                         }
                         ui.table_headers_row();
 
+
                         for i in 0..256 {
                             let mut addr =
-                                starting_address as i32 + self.debugger_offset as i32 + i;
+                                window_start as i32 + self.debugger_offset as i32 + i;
                             if addr < u16::MIN.into() {
                                 addr = u16::MIN.into();
                                 self.debugger_offset = 0;
@@ -111,6 +114,12 @@ impl MemoryMapping {
                             } else {
                                 [1., 1., 1., 1.]
                             };
+                            
+                            if starting_address == addr as u16 {
+                                let bg_color = ui.style_color(StyleColor::HeaderActive);
+                                ui.table_set_bg_color(TableBgTarget::CELL_BG, bg_color);
+                            };
+
                             ui.text_colored(color, val);
                             //ui.push_style_var(style_var)
                         }
