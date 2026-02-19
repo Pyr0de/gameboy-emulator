@@ -3,10 +3,10 @@ mod cpu;
 mod debugger;
 mod graphics;
 mod instructions;
+mod interrupt;
 mod memory_mapping;
 mod registers;
 mod sdl;
-mod interrupt;
 
 use std::{fs::File, io::Read, process::exit};
 

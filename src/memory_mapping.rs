@@ -1,7 +1,7 @@
 use std::ops::{Index, IndexMut};
 
 use anyhow::{Result, bail};
-use imgui::{StyleColor, TableBgTarget, TableFlags};
+use imgui::{StyleColor, TableFlags};
 
 use crate::{graphics::Graphics, interrupt::Interrupt};
 
@@ -153,10 +153,9 @@ impl MemoryMapping {
                             .input_text("replace", &mut str)
                             .enter_returns_true(true)
                             .build()
+                            && let Ok(n) = u8::from_str_radix(&str, 16)
                         {
-                            if let Ok(n) = u8::from_str_radix(&str, 16) {
-                                *val_mut = n;
-                            }
+                            *val_mut = n;
                         }
                     }
                 }
