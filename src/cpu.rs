@@ -209,10 +209,7 @@ impl Cpu {
             Instruction::CALL(condition, op) => {
                 let (addr, _cycles) = self.get_u16(op)?;
                 if condition.is_none_or(|cond| self.registers.get_flag_condition(cond)) {
-                    *self.memory.get_mut(self.registers.sp - 1)? = (self.registers.pc >> 8) as u8;
-                    *self.memory.get_mut(self.registers.sp - 2)? = (self.registers.pc & 0xff) as u8;
-                    self.registers.sp -= 2;
-                    self.registers.pc = addr;
+                    self.call(addr)?;
                     6
                 } else {
                     3
@@ -223,10 +220,7 @@ impl Cpu {
                     .clone()
                     .is_none_or(|cond| self.registers.get_flag_condition(cond))
                 {
-                    let addr = (*self.memory.get(self.registers.sp + 1)? as u16) << 8
-                        | *self.memory.get(self.registers.sp)? as u16;
-                    self.registers.sp += 2;
-                    self.registers.pc = addr;
+                    self.ret()?;
                     match condition {
                         None => 4,
                         Some(_) => 5,
@@ -344,15 +338,32 @@ impl Cpu {
             Instruction::RETI => {
                 // Enables interrupts and returns (same as ei immediately followed by ret)
                 self.set_ime = true;
-                let addr = (*self.memory.get(self.registers.sp + 1)? as u16) << 8
-                    | *self.memory.get(self.registers.sp)? as u16;
-                self.registers.sp += 2;
-                self.registers.pc = addr;
+                self.ret()?;
+                4
+            }
+            Instruction::RST(n) => {
+                self.call(n as u16 * 8)?;
                 4
             }
             _ => bail!("not implemented: {instruction:?}"),
         };
 
+        Ok(())
+    }
+
+    fn call(&mut self, addr: u16) -> Result<()> {
+        *self.memory.get_mut(self.registers.sp - 1)? = (self.registers.pc >> 8) as u8;
+        *self.memory.get_mut(self.registers.sp - 2)? = (self.registers.pc & 0xff) as u8;
+        self.registers.sp -= 2;
+        self.registers.pc = addr;
+        Ok(())
+    }
+
+    fn ret(&mut self) -> Result<()> {
+        let addr = (*self.memory.get(self.registers.sp + 1)? as u16) << 8
+            | *self.memory.get(self.registers.sp)? as u16;
+        self.registers.sp += 2;
+        self.registers.pc = addr;
         Ok(())
     }
 
