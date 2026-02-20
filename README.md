@@ -21,7 +21,7 @@ Options:
     - [X] ALU
     - [X] Opcode execution
 - [X] Interrupts
-- [ ] Timer
+- [X] Timer
 - [ ] Graphics
 - [ ] Audio
 - [ ] MBC

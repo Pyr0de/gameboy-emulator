@@ -37,7 +37,7 @@ impl Cpu {
         }
 
         self.registers.pc += inc;
-        let _cycles = match instruction {
+        let cycles = match instruction {
             Instruction::NOP => 1,
             Instruction::LD(Operand::U8(a), Operand::U8(b)) => {
                 let (value, a_cycles) = self.get_u8(b)?;
@@ -340,7 +340,9 @@ impl Cpu {
             }
             _ => bail!("not implemented: {instruction:?}"),
         };
-
+        self.memory
+            .timer
+            .do_cycles(&mut self.memory.interrupt, cycles);
         Ok(())
     }
 
