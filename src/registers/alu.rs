@@ -217,12 +217,11 @@ impl Alu {
 
     pub(crate) fn set_bit(bit: u8, op: u8, set: bool) -> u8 {
         let mask = 1 << bit;
-        let mut res = op & mask;
-        if set {
-            res |= mask;
+        if (op & mask != 0) != set {
+            return op ^ mask;
         }
 
-        res
+        op
     }
 }
 
