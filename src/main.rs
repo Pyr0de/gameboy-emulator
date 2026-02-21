@@ -9,7 +9,13 @@ mod registers;
 mod sdl;
 mod timer;
 
-use std::{fs::File, io::Read, process::exit};
+use std::{
+    fs::File,
+    io::Read,
+    process::exit,
+    thread::sleep,
+    time::{Duration, Instant},
+};
 
 use anyhow::Error;
 
@@ -50,15 +56,24 @@ fn gameboy_emulator(args: Args) -> Result<(), Error> {
         let (instruction, inc) = cpu.get_instruction()?;
 
         if !pause || step {
+            let last = Instant::now();
             let pc = cpu.registers.pc;
-            if let Err(e) = cpu.run_instruction(instruction.clone(), inc) {
-                if args.debug {
+            let cycles = match (cpu.run_instruction(instruction.clone(), inc), args.debug) {
+                (Ok(c), _) => c,
+                (Err(e), true) => {
                     sdl.debugger.errors.push((pc, format!("{e:?}")));
                     continue;
-                } else {
-                    return Err(e);
                 }
-            }
+                (Err(e), false) => return Err(e),
+            };
+
+            let time_taken = last.duration_since(Instant::now());
+
+            // Calculation: Clock speed = 4194304 Hz
+            //              M-Cycles/sec = 4194304/4 = 1048576 M-cycles/sec
+            //              1 M-cycles takes 1/1048576 sec = 0.000000954 sec
+            //                                             = 954 ns
+            sleep(Duration::from_nanos(954 * cycles as u64).saturating_sub(time_taken));
 
             if let Instruction::STOP(_) = instruction {
                 break;

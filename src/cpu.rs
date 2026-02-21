@@ -31,7 +31,7 @@ impl Cpu {
         })
     }
 
-    pub(crate) fn run_instruction(&mut self, instruction: Instruction, inc: u16) -> Result<()> {
+    pub(crate) fn run_instruction(&mut self, instruction: Instruction, inc: u16) -> Result<u8> {
         if let Some(addr) = self.memory.interrupt.handle_interrupts() {
             self.call(addr)?;
         }
@@ -340,10 +340,11 @@ impl Cpu {
             }
             _ => bail!("not implemented: {instruction:?}"),
         };
+
         self.memory
             .timer
             .do_cycles(&mut self.memory.interrupt, cycles);
-        Ok(())
+        Ok(cycles)
     }
 
     fn call(&mut self, addr: u16) -> Result<()> {
