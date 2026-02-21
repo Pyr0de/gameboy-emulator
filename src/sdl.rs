@@ -1,12 +1,9 @@
+use std::sync::atomic::AtomicU64;
+
 use anyhow::Result;
 use imgui::Ui;
 use imgui_sdl3_renderer::Renderer;
-use sdl3::{
-    EventPump, Sdl,
-    event::Event,
-    render::Canvas,
-    video::{SwapInterval, Window},
-};
+use sdl3::{EventPump, Sdl, event::Event, render::Canvas, video::Window};
 
 use crate::debugger::Debugger;
 
@@ -17,6 +14,8 @@ pub struct SdlInstance {
 
     pub debugger: Debugger,
 }
+
+const FPS: u64 = 60;
 
 impl SdlInstance {
     pub fn new(window_name: &str, width: u32, height: u32) -> Result<Self> {
@@ -35,8 +34,6 @@ impl SdlInstance {
 
         let canvas = window.into_canvas();
         let event_pump = sdl_context.event_pump()?;
-
-        video_subsystem.gl_set_swap_interval(SwapInterval::VSync)?;
 
         Ok(Self {
             sdl_context,
@@ -64,6 +61,15 @@ impl SdlInstance {
         renderer: &mut Renderer,
         callback: F,
     ) -> Result<()> {
+        static LAST: AtomicU64 = AtomicU64::new(0);
+
+        let now = sdl3::timer::ticks();
+        let delta = now - LAST.load(std::sync::atomic::Ordering::Relaxed);
+        if delta < 1000 / FPS {
+            return Ok(());
+        }
+        LAST.store(now, std::sync::atomic::Ordering::Relaxed);
+
         self.debugger.platform.prepare_frame(
             &mut self.sdl_context,
             &mut self.debugger.imgui_context,
