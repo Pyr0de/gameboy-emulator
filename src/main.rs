@@ -54,6 +54,7 @@ fn gameboy_emulator(args: Args) -> Result<(), Error> {
 
         // Run execute instruction
         let (instruction, inc) = cpu.get_instruction()?;
+        let mut graphics_sleep = false;
 
         if !pause || step {
             let last = Instant::now();
@@ -78,10 +79,12 @@ fn gameboy_emulator(args: Args) -> Result<(), Error> {
             if let Instruction::STOP(_) = instruction {
                 break;
             }
+        } else {
+            graphics_sleep = true;
         }
 
         // Update graphics
-        sdl.update_graphics(&mut renderer, |ui| {
+        sdl.update_graphics(&mut renderer, graphics_sleep, |ui| {
             ui.window("Execution")
                 .size([400., 150.], imgui::Condition::FirstUseEver)
                 .build(|| {

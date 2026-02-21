@@ -1,4 +1,4 @@
-use std::sync::atomic::AtomicU64;
+use std::{sync::atomic::AtomicU64, thread::sleep, time::Duration};
 
 use anyhow::Result;
 use imgui::Ui;
@@ -59,6 +59,7 @@ impl SdlInstance {
     pub fn update_graphics<F: FnOnce(&Ui)>(
         &mut self,
         renderer: &mut Renderer,
+        should_sleep: bool,
         callback: F,
     ) -> Result<()> {
         static LAST: AtomicU64 = AtomicU64::new(0);
@@ -66,6 +67,9 @@ impl SdlInstance {
         let now = sdl3::timer::ticks();
         let delta = now - LAST.load(std::sync::atomic::Ordering::Relaxed);
         if delta < 1000 / FPS {
+            if should_sleep {
+                sleep(Duration::from_millis(1000/FPS - delta));
+            }
             return Ok(());
         }
         LAST.store(now, std::sync::atomic::Ordering::Relaxed);
