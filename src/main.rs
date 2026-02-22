@@ -22,6 +22,7 @@ use anyhow::Error;
 use crate::{
     cli::Args,
     cpu::Cpu,
+    debugger::Debugger,
     instructions::Instruction,
     memory_mapping::{MemoryMapping, Rom},
     sdl::SdlInstance,
@@ -40,15 +41,14 @@ fn gameboy_emulator(args: Args) -> Result<(), Error> {
 
     let mut sdl = SdlInstance::new(&window_name, 1600, 900)?;
     let texture_creator = sdl.canvas.texture_creator();
-    let mut renderer =
-        imgui_sdl3_renderer::Renderer::new(&texture_creator, &mut sdl.debugger.imgui_context)?;
+    let mut debugger = Debugger::new(&texture_creator)?;
 
     let mut pause = true;
     let mut step = false;
 
     'main: loop {
         // Handle sdl events
-        if sdl.handle_event() {
+        if sdl.handle_event(&mut debugger) {
             break 'main;
         }
 
@@ -62,7 +62,7 @@ fn gameboy_emulator(args: Args) -> Result<(), Error> {
             let cycles = match (cpu.run_instruction(instruction.clone(), inc), args.debug) {
                 (Ok(c), _) => c,
                 (Err(e), true) => {
-                    sdl.debugger.errors.push((pc, format!("{e:?}")));
+                    debugger.errors.push((pc, format!("{e:?}")));
                     continue;
                 }
                 (Err(e), false) => return Err(e),
@@ -84,7 +84,7 @@ fn gameboy_emulator(args: Args) -> Result<(), Error> {
         }
 
         // Update graphics
-        sdl.update_graphics(&mut renderer, graphics_sleep, |ui| {
+        sdl.update_graphics(&mut debugger, graphics_sleep, |ui| {
             ui.window("Execution")
                 .size([400., 150.], imgui::Condition::FirstUseEver)
                 .build(|| {

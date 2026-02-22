@@ -2,17 +2,21 @@ use anyhow::Result;
 use imgui::{Context, Ui};
 use imgui_sdl3_renderer::Renderer;
 use imgui_sdl3_support::SdlPlatform;
-use sdl3::{render::Canvas, video::Window};
+use sdl3::{
+    render::{Canvas, TextureCreator},
+    video::{Window, WindowContext},
+};
 
-pub struct Debugger {
+pub struct Debugger<'a> {
     pub imgui_context: Context,
     pub platform: SdlPlatform,
+    pub renderer: Renderer<'a>,
 
     pub errors: Vec<(u16, String)>,
 }
 
-impl Debugger {
-    pub fn new() -> Result<Self> {
+impl<'a> Debugger<'a> {
+    pub fn new(texture_creator: &'a TextureCreator<WindowContext>) -> Result<Self> {
         let mut imgui_context = imgui::Context::create();
         imgui_context.io_mut().config_flags |= imgui::ConfigFlags::NAV_ENABLE_KEYBOARD;
         imgui_context.set_ini_filename(None);
@@ -26,17 +30,18 @@ impl Debugger {
             }]);
 
         let platform = SdlPlatform::new(&mut imgui_context);
+        let renderer = imgui_sdl3_renderer::Renderer::new(texture_creator, &mut imgui_context)?;
 
         Ok(Debugger {
             imgui_context,
             platform,
+            renderer,
             errors: Vec::new(),
         })
     }
 
     pub fn update_graphics<F: FnOnce(&Ui)>(
         &mut self,
-        renderer: &mut Renderer,
         canvas: &mut Canvas<Window>,
         callback: F,
     ) -> Result<()> {
@@ -53,7 +58,7 @@ impl Debugger {
                 }
             });
 
-        renderer.render(self.imgui_context.render(), canvas)?;
+        self.renderer.render(self.imgui_context.render(), canvas)?;
 
         Ok(())
     }

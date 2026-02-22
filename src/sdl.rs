@@ -2,7 +2,6 @@ use std::{sync::atomic::AtomicU64, thread::sleep, time::Duration};
 
 use anyhow::Result;
 use imgui::Ui;
-use imgui_sdl3_renderer::Renderer;
 use sdl3::{EventPump, Sdl, event::Event, render::Canvas, video::Window};
 
 use crate::debugger::Debugger;
@@ -11,8 +10,6 @@ pub struct SdlInstance {
     pub sdl_context: Sdl,
     pub canvas: Canvas<Window>,
     pub event_pump: EventPump,
-
-    pub debugger: Debugger,
 }
 
 const FPS: u64 = 60;
@@ -39,15 +36,14 @@ impl SdlInstance {
             sdl_context,
             canvas,
             event_pump,
-            debugger: Debugger::new()?,
         })
     }
 
-    pub fn handle_event(&mut self) -> bool {
+    pub fn handle_event(&mut self, debugger: &mut Debugger) -> bool {
         for event in self.event_pump.poll_iter() {
-            self.debugger
+            debugger
                 .platform
-                .handle_event(&mut self.debugger.imgui_context, &event);
+                .handle_event(&mut debugger.imgui_context, &event);
             if let Event::Quit { .. } = event {
                 return true;
             }
@@ -58,7 +54,7 @@ impl SdlInstance {
 
     pub fn update_graphics<F: FnOnce(&Ui)>(
         &mut self,
-        renderer: &mut Renderer,
+        debugger: &mut Debugger,
         should_sleep: bool,
         callback: F,
     ) -> Result<()> {
@@ -68,15 +64,15 @@ impl SdlInstance {
         let delta = now - LAST.load(std::sync::atomic::Ordering::Relaxed);
         if delta < 1000 / FPS {
             if should_sleep {
-                sleep(Duration::from_millis(1000/FPS - delta));
+                sleep(Duration::from_millis(1000 / FPS - delta));
             }
             return Ok(());
         }
         LAST.store(now, std::sync::atomic::Ordering::Relaxed);
 
-        self.debugger.platform.prepare_frame(
+        debugger.platform.prepare_frame(
             &mut self.sdl_context,
-            &mut self.debugger.imgui_context,
+            &mut debugger.imgui_context,
             self.canvas.window(),
             &self.event_pump,
         );
@@ -84,8 +80,7 @@ impl SdlInstance {
         self.canvas.clear();
 
         // Emulator graphics
-        self.debugger
-            .update_graphics(renderer, &mut self.canvas, callback)?;
+        debugger.update_graphics(&mut self.canvas, callback)?;
 
         self.canvas.present();
 
