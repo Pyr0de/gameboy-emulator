@@ -28,7 +28,7 @@ use crate::{
     sdl::SdlInstance,
 };
 
-fn gameboy_emulator(args: Args) -> Result<(), Error> {
+fn gameboy_emulator(args: Args, sdl: &mut SdlInstance, debugger: &mut Debugger) -> Result<(), Error> {
     let mut file = File::open(&args.file)?;
     let mut buffer = Vec::new();
 
@@ -37,18 +37,12 @@ fn gameboy_emulator(args: Args) -> Result<(), Error> {
 
     let mut cpu = Cpu::new(memory);
 
-    let window_name = format!("Emulator: {}", args.file.to_str().unwrap_or(""));
-
-    let mut sdl = SdlInstance::new(&window_name, 1600, 900)?;
-    let texture_creator = sdl.canvas.texture_creator();
-    let mut debugger = Debugger::new(&texture_creator)?;
-
     let mut pause = true;
     let mut step = false;
 
     'main: loop {
         // Handle sdl events
-        if sdl.handle_event(&mut debugger) {
+        if sdl.handle_event(debugger) {
             break 'main;
         }
 
@@ -84,7 +78,7 @@ fn gameboy_emulator(args: Args) -> Result<(), Error> {
         }
 
         // Update graphics
-        sdl.update_graphics(&mut debugger, graphics_sleep, |ui| {
+        sdl.update_graphics(debugger, graphics_sleep, |ui| {
             ui.window("Execution")
                 .size([400., 150.], imgui::Condition::FirstUseEver)
                 .build(|| {
@@ -104,7 +98,14 @@ fn gameboy_emulator(args: Args) -> Result<(), Error> {
 }
 
 fn main() {
-    if let Err(e) = gameboy_emulator(Args::new()) {
+    let args = Args::new();
+    let window_name = format!("Emulator: {}", args.file.to_str().unwrap_or(""));
+
+    let mut sdl = SdlInstance::new(&window_name, 1600, 900).expect("Error Initializing SDL");
+    let texture_creator = sdl.canvas.texture_creator();
+    let mut debugger = Debugger::new(&texture_creator).expect("Error Initializing Imgui");
+
+    if let Err(e) = gameboy_emulator(args, &mut sdl, &mut debugger) {
         eprintln!("{e:?}");
         exit(1);
     }
