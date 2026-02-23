@@ -10,8 +10,6 @@ mod sdl;
 mod timer;
 
 use std::{
-    fs::File,
-    io::Read,
     process::exit,
     thread::sleep,
     time::{Duration, Instant},
@@ -28,17 +26,14 @@ use crate::{
     sdl::SdlInstance,
 };
 
-fn gameboy_emulator(args: Args, sdl: &mut SdlInstance, debugger: &mut Debugger) -> Result<(), Error> {
-    let mut file = File::open(&args.file)?;
-    let mut buffer = Vec::new();
-
-    file.read_to_end(&mut buffer)?;
-    let memory = MemoryMapping::new(Rom { rom: buffer });
+fn gameboy_emulator(
+    args: Args,
+    sdl: &mut SdlInstance,
+    debugger: &mut Debugger,
+) -> Result<(), Error> {
+    let memory = MemoryMapping::new(Rom::new(&args.file)?);
 
     let mut cpu = Cpu::new(memory);
-
-    let mut pause = true;
-    let mut step = false;
 
     'main: loop {
         // Handle sdl events
@@ -50,7 +45,7 @@ fn gameboy_emulator(args: Args, sdl: &mut SdlInstance, debugger: &mut Debugger) 
         let (instruction, inc) = cpu.get_instruction()?;
         let mut graphics_sleep = false;
 
-        if !pause || step {
+        if debugger.should_execute() {
             let last = Instant::now();
             let pc = cpu.registers.pc;
             let cycles = match (cpu.run_instruction(instruction.clone(), inc), args.debug) {
@@ -78,17 +73,7 @@ fn gameboy_emulator(args: Args, sdl: &mut SdlInstance, debugger: &mut Debugger) 
         }
 
         // Update graphics
-        sdl.update_graphics(debugger, graphics_sleep, |ui| {
-            ui.window("Execution")
-                .size([400., 150.], imgui::Condition::FirstUseEver)
-                .build(|| {
-                    ui.text(format!("{} fps", ui.io().framerate as usize));
-                    ui.checkbox("Pause", &mut pause);
-                    step = ui.button("Step");
-                    if pause {
-                        ui.text(format!("Next Instruction: {instruction:?}"));
-                    }
-                });
+        sdl.update_graphics(debugger, instruction, graphics_sleep, |ui| {
             cpu.registers.display_debugger(ui);
             cpu.memory.display_debugger(ui, cpu.registers.pc);
         })?;

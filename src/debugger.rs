@@ -7,10 +7,22 @@ use sdl3::{
     video::{Window, WindowContext},
 };
 
+use crate::instructions::Instruction;
+
+#[derive(Debug, Default)]
+enum ExecutionState {
+    #[default]
+    Pause,
+    Step,
+    Execute,
+}
+
 pub struct Debugger<'a> {
     pub imgui_context: Context,
     pub platform: SdlPlatform,
     pub renderer: Renderer<'a>,
+
+    execution_state: ExecutionState,
 
     pub errors: Vec<(u16, String)>,
 }
@@ -36,17 +48,49 @@ impl<'a> Debugger<'a> {
             imgui_context,
             platform,
             renderer,
+            execution_state: ExecutionState::default(),
             errors: Vec::new(),
         })
+    }
+
+    pub fn should_execute(&mut self) -> bool {
+        match self.execution_state {
+            ExecutionState::Pause => false,
+            ExecutionState::Execute => true,
+            ExecutionState::Step => {
+                self.execution_state = ExecutionState::Pause;
+                true
+            }
+        }
     }
 
     pub fn update_graphics<F: FnOnce(&Ui)>(
         &mut self,
         canvas: &mut Canvas<Window>,
+        instruction: Instruction,
         callback: F,
     ) -> Result<()> {
         let ui = self.imgui_context.new_frame();
-        callback(ui);
+
+        ui.window("Execution")
+            .size([400., 150.], imgui::Condition::FirstUseEver)
+            .build(|| {
+                ui.text(format!("{} fps", ui.io().framerate as usize));
+
+                let mut pause = !matches!(self.execution_state, ExecutionState::Execute);
+                ui.checkbox("Pause", &mut pause);
+                if ui.button("Step") && pause {
+                    self.execution_state = ExecutionState::Step
+                } else {
+                    self.execution_state = match pause {
+                        true => ExecutionState::Pause,
+                        false => ExecutionState::Execute,
+                    }
+                }
+                if pause {
+                    ui.text(format!("Next Instruction: {instruction:?}"));
+                }
+            });
 
         ui.window("Errors")
             .position([500., 50.], imgui::Condition::FirstUseEver)
@@ -57,6 +101,8 @@ impl<'a> Debugger<'a> {
                     ui.text(format!("PC: 0x{pc:04x} -> {err}"));
                 }
             });
+
+        callback(ui);
 
         self.renderer.render(self.imgui_context.render(), canvas)?;
 

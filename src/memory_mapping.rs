@@ -1,4 +1,9 @@
-use std::ops::{Index, IndexMut};
+use std::{
+    fs::File,
+    io::Read,
+    ops::{Index, IndexMut},
+    path::Path,
+};
 
 use anyhow::{Result, bail};
 use imgui::{StyleColor, TableFlags};
@@ -215,6 +220,16 @@ impl MemoryMapping {
 pub(crate) struct Rom {
     // Header
     pub rom: Vec<u8>,
+}
+
+impl Rom {
+    pub fn new<P: AsRef<Path>>(file: P) -> Result<Self> {
+        let mut file = File::open(file)?;
+        let mut buffer = Vec::new();
+
+        file.read_to_end(&mut buffer)?;
+        Ok(Self { rom: buffer })
+    }
 }
 
 impl Index<u16> for Rom {

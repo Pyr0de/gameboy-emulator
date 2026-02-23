@@ -4,7 +4,7 @@ use anyhow::Result;
 use imgui::Ui;
 use sdl3::{EventPump, Sdl, event::Event, render::Canvas, video::Window};
 
-use crate::debugger::Debugger;
+use crate::{debugger::Debugger, instructions::Instruction};
 
 pub struct SdlInstance {
     pub sdl_context: Sdl,
@@ -55,6 +55,7 @@ impl SdlInstance {
     pub fn update_graphics<F: FnOnce(&Ui)>(
         &mut self,
         debugger: &mut Debugger,
+        instruction: Instruction,
         should_sleep: bool,
         callback: F,
     ) -> Result<()> {
@@ -80,7 +81,7 @@ impl SdlInstance {
         self.canvas.clear();
 
         // Emulator graphics
-        debugger.update_graphics(&mut self.canvas, callback)?;
+        debugger.update_graphics(&mut self.canvas, instruction, callback)?;
 
         self.canvas.present();
 
