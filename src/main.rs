@@ -27,13 +27,15 @@ use crate::{
 };
 
 fn gameboy_emulator(
-    args: Args,
+    args: &Args,
     sdl: &mut SdlInstance,
     debugger: &mut Debugger,
-) -> Result<(), Error> {
+) -> Result<bool, Error> {
     let memory = MemoryMapping::new(Rom::new(&args.file)?);
 
     let mut cpu = Cpu::new(memory);
+
+    let mut errors = Vec::new();
 
     'main: loop {
         // Handle sdl events
@@ -51,7 +53,7 @@ fn gameboy_emulator(
             let cycles = match (cpu.run_instruction(instruction.clone(), inc), args.debug) {
                 (Ok(c), _) => c,
                 (Err(e), true) => {
-                    debugger.errors.push((pc, format!("{e:?}")));
+                    errors.push((pc, format!("{e:?}")));
                     continue;
                 }
                 (Err(e), false) => return Err(e),
@@ -73,13 +75,25 @@ fn gameboy_emulator(
         }
 
         // Update graphics
-        sdl.update_graphics(debugger, instruction, graphics_sleep, |ui| {
+        if sdl.update_graphics(debugger, instruction, graphics_sleep, |ui| {
             cpu.registers.display_debugger(ui);
             cpu.memory.display_debugger(ui, cpu.registers.pc);
-        })?;
+
+            ui.window("Errors")
+                .position([500., 50.], imgui::Condition::FirstUseEver)
+                .size([300., 200.], imgui::Condition::FirstUseEver)
+                .horizontal_scrollbar(true)
+                .build(|| {
+                    for (pc, err) in &errors {
+                        ui.text(format!("PC: 0x{pc:04x} -> {err}"));
+                    }
+                });
+        })? {
+            return Ok(true);
+        }
     }
 
-    Ok(())
+    Ok(false)
 }
 
 fn main() {
@@ -90,8 +104,17 @@ fn main() {
     let texture_creator = sdl.canvas.texture_creator();
     let mut debugger = Debugger::new(&texture_creator).expect("Error Initializing Imgui");
 
-    if let Err(e) = gameboy_emulator(args, &mut sdl, &mut debugger) {
-        eprintln!("{e:?}");
-        exit(1);
+    loop {
+        match gameboy_emulator(&args, &mut sdl, &mut debugger) {
+            Err(e) => {
+                eprintln!("{e:?}");
+                exit(1);
+            }
+            Ok(reset) => {
+                if !reset {
+                    break;
+                }
+            }
+        }
     }
 }

@@ -58,7 +58,7 @@ impl SdlInstance {
         instruction: Instruction,
         should_sleep: bool,
         callback: F,
-    ) -> Result<()> {
+    ) -> Result<bool> {
         static LAST: AtomicU64 = AtomicU64::new(0);
 
         let now = sdl3::timer::ticks();
@@ -67,7 +67,7 @@ impl SdlInstance {
             if should_sleep {
                 sleep(Duration::from_millis(1000 / FPS - delta));
             }
-            return Ok(());
+            return Ok(false);
         }
         LAST.store(now, std::sync::atomic::Ordering::Relaxed);
 
@@ -81,10 +81,10 @@ impl SdlInstance {
         self.canvas.clear();
 
         // Emulator graphics
-        debugger.update_graphics(&mut self.canvas, instruction, callback)?;
+        let reset = debugger.update_graphics(&mut self.canvas, instruction, callback)?;
 
         self.canvas.present();
 
-        Ok(())
+        Ok(reset)
     }
 }

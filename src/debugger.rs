@@ -23,8 +23,6 @@ pub struct Debugger<'a> {
     pub renderer: Renderer<'a>,
 
     execution_state: ExecutionState,
-
-    pub errors: Vec<(u16, String)>,
 }
 
 impl<'a> Debugger<'a> {
@@ -49,7 +47,6 @@ impl<'a> Debugger<'a> {
             platform,
             renderer,
             execution_state: ExecutionState::default(),
-            errors: Vec::new(),
         })
     }
 
@@ -69,13 +66,19 @@ impl<'a> Debugger<'a> {
         canvas: &mut Canvas<Window>,
         instruction: Instruction,
         callback: F,
-    ) -> Result<()> {
+    ) -> Result<bool> {
         let ui = self.imgui_context.new_frame();
+        let mut reset = false;
 
         ui.window("Execution")
             .size([400., 150.], imgui::Condition::FirstUseEver)
             .build(|| {
                 ui.text(format!("{} fps", ui.io().framerate as usize));
+
+                if ui.button("Reset") {
+                    reset = true;
+                }
+                ui.same_line();
 
                 let mut pause = !matches!(self.execution_state, ExecutionState::Execute);
                 ui.checkbox("Pause", &mut pause);
@@ -92,20 +95,10 @@ impl<'a> Debugger<'a> {
                 }
             });
 
-        ui.window("Errors")
-            .position([500., 50.], imgui::Condition::FirstUseEver)
-            .size([300., 200.], imgui::Condition::FirstUseEver)
-            .horizontal_scrollbar(true)
-            .build(|| {
-                for (pc, err) in &self.errors {
-                    ui.text(format!("PC: 0x{pc:04x} -> {err}"));
-                }
-            });
-
         callback(ui);
 
         self.renderer.render(self.imgui_context.render(), canvas)?;
 
-        Ok(())
+        Ok(reset)
     }
 }
