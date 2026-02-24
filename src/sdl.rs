@@ -1,10 +1,17 @@
 use std::{sync::atomic::AtomicU64, thread::sleep, time::Duration};
 
 use anyhow::Result;
-use imgui::Ui;
 use sdl3::{EventPump, Sdl, event::Event, render::Canvas, video::Window};
 
-use crate::{debugger::Debugger, instructions::Instruction};
+use crate::debugger::Debugger;
+
+pub struct UpdateToken<'a>(pub &'a mut SdlInstance);
+
+impl<'a> Drop for UpdateToken<'a> {
+    fn drop(&mut self) {
+        self.0.canvas.present();
+    }
+}
 
 pub struct SdlInstance {
     pub sdl_context: Sdl,
@@ -52,13 +59,11 @@ impl SdlInstance {
         false
     }
 
-    pub fn update_graphics<F: FnOnce(&Ui)>(
+    pub fn update_graphics(
         &mut self,
         debugger: &mut Debugger,
-        instruction: Instruction,
         should_sleep: bool,
-        callback: F,
-    ) -> Result<bool> {
+    ) -> Option<UpdateToken<'_>> {
         static LAST: AtomicU64 = AtomicU64::new(0);
 
         let now = sdl3::timer::ticks();
@@ -67,7 +72,7 @@ impl SdlInstance {
             if should_sleep {
                 sleep(Duration::from_millis(1000 / FPS - delta));
             }
-            return Ok(false);
+            return None;
         }
         LAST.store(now, std::sync::atomic::Ordering::Relaxed);
 
@@ -80,11 +85,6 @@ impl SdlInstance {
 
         self.canvas.clear();
 
-        // Emulator graphics
-        let reset = debugger.update_graphics(&mut self.canvas, instruction, callback)?;
-
-        self.canvas.present();
-
-        Ok(reset)
+        Some(UpdateToken(self))
     }
 }

@@ -10,7 +10,7 @@ use sdl3::{
 use crate::instructions::Instruction;
 
 #[derive(Debug, Default)]
-enum ExecutionState {
+pub enum ExecutionState {
     #[default]
     Pause,
     Step,
@@ -22,7 +22,7 @@ pub struct Debugger<'a> {
     pub platform: SdlPlatform,
     pub renderer: Renderer<'a>,
 
-    execution_state: ExecutionState,
+    pub execution_state: ExecutionState,
 }
 
 impl<'a> Debugger<'a> {
@@ -61,13 +61,16 @@ impl<'a> Debugger<'a> {
         }
     }
 
-    pub fn update_graphics<F: FnOnce(&Ui)>(
-        &mut self,
-        canvas: &mut Canvas<Window>,
+    pub fn render(&mut self, canvas: &mut Canvas<Window>) -> Result<()> {
+        self.renderer.render(self.imgui_context.render(), canvas)?;
+        Ok(())
+    }
+
+    pub fn display_execution_debugger(
+        ui: &mut Ui,
+        execution_state: &mut ExecutionState,
         instruction: Instruction,
-        callback: F,
-    ) -> Result<bool> {
-        let ui = self.imgui_context.new_frame();
+    ) -> bool {
         let mut reset = false;
 
         ui.window("Execution")
@@ -80,12 +83,12 @@ impl<'a> Debugger<'a> {
                 }
                 ui.same_line();
 
-                let mut pause = !matches!(self.execution_state, ExecutionState::Execute);
+                let mut pause = !matches!(execution_state, ExecutionState::Execute);
                 ui.checkbox("Pause", &mut pause);
                 if ui.button("Step") && pause {
-                    self.execution_state = ExecutionState::Step
+                    *execution_state = ExecutionState::Step
                 } else {
-                    self.execution_state = match pause {
+                    *execution_state = match pause {
                         true => ExecutionState::Pause,
                         false => ExecutionState::Execute,
                     }
@@ -94,11 +97,6 @@ impl<'a> Debugger<'a> {
                     ui.text(format!("Next Instruction: {instruction:?}"));
                 }
             });
-
-        callback(ui);
-
-        self.renderer.render(self.imgui_context.render(), canvas)?;
-
-        Ok(reset)
+        reset
     }
 }

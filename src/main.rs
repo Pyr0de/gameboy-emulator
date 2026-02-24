@@ -75,7 +75,16 @@ fn gameboy_emulator(
         }
 
         // Update graphics
-        if sdl.update_graphics(debugger, instruction, graphics_sleep, |ui| {
+        if let Some(mut token) = sdl.update_graphics(debugger, graphics_sleep) {
+            let sdl = &mut token.0;
+            let ui = debugger.imgui_context.new_frame();
+
+            let reset = Debugger::display_execution_debugger(
+                ui,
+                &mut debugger.execution_state,
+                instruction,
+            );
+
             cpu.registers.display_debugger(ui);
             cpu.memory.display_debugger(ui, cpu.registers.pc);
 
@@ -88,8 +97,11 @@ fn gameboy_emulator(
                         ui.text(format!("PC: 0x{pc:04x} -> {err}"));
                     }
                 });
-        })? {
-            return Ok(true);
+
+            debugger.render(&mut sdl.canvas)?;
+            if reset {
+                return Ok(true);
+            }
         }
     }
 
