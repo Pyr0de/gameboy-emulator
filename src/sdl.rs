@@ -1,4 +1,4 @@
-use std::{sync::atomic::AtomicU64, thread::sleep, time::Duration};
+use std::{sync::atomic::AtomicU64, time::Duration};
 
 use anyhow::Result;
 use sdl3::{EventPump, Sdl, event::Event, render::Canvas, video::Window};
@@ -6,6 +6,8 @@ use sdl3::{EventPump, Sdl, event::Event, render::Canvas, video::Window};
 use crate::debugger::Debugger;
 
 pub struct UpdateToken<'a>(pub &'a mut SdlInstance);
+
+static LAST_UPDATE: AtomicU64 = AtomicU64::new(0);
 
 impl<'a> Drop for UpdateToken<'a> {
     fn drop(&mut self) {
@@ -59,22 +61,22 @@ impl SdlInstance {
         false
     }
 
-    pub fn update_graphics(
-        &mut self,
-        debugger: &mut Debugger,
-        should_sleep: bool,
-    ) -> Option<UpdateToken<'_>> {
-        static LAST: AtomicU64 = AtomicU64::new(0);
-
+    pub fn to_sleep(&self) -> Duration {
         let now = sdl3::timer::ticks();
-        let delta = now - LAST.load(std::sync::atomic::Ordering::Relaxed);
+        let delta = now - LAST_UPDATE.load(std::sync::atomic::Ordering::Relaxed);
         if delta < 1000 / FPS {
-            if should_sleep {
-                sleep(Duration::from_millis(1000 / FPS - delta));
-            }
+            return Duration::from_millis(1000 / FPS - delta);
+        }
+
+        Duration::ZERO
+    }
+
+    pub fn update_graphics(&mut self, debugger: &mut Debugger) -> Option<UpdateToken<'_>> {
+        if self.to_sleep() != Duration::ZERO {
             return None;
         }
-        LAST.store(now, std::sync::atomic::Ordering::Relaxed);
+
+        LAST_UPDATE.store(sdl3::timer::ticks(), std::sync::atomic::Ordering::Relaxed);
 
         debugger.platform.prepare_frame(
             &mut self.sdl_context,

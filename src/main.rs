@@ -45,9 +45,8 @@ fn gameboy_emulator(
 
         // Run execute instruction
         let (instruction, inc) = cpu.get_instruction()?;
-        let mut graphics_sleep = false;
 
-        if debugger.should_execute() {
+        let sleep_duration = if debugger.should_execute() {
             let last = Instant::now();
             let pc = cpu.registers.pc;
             let cycles = match (cpu.run_instruction(instruction.clone(), inc), args.debug) {
@@ -61,21 +60,23 @@ fn gameboy_emulator(
 
             let time_taken = last.duration_since(Instant::now());
 
+            if let Instruction::STOP(_) = instruction {
+                break;
+            }
+
             // Calculation: Clock speed = 4194304 Hz
             //              M-Cycles/sec = 4194304/4 = 1048576 M-cycles/sec
             //              1 M-cycles takes 1/1048576 sec = 0.000000954 sec
             //                                             = 954 ns
-            sleep(Duration::from_nanos(954 * cycles as u64).saturating_sub(time_taken));
-
-            if let Instruction::STOP(_) = instruction {
-                break;
-            }
+            Duration::from_nanos(954 * cycles as u64).saturating_sub(time_taken)
         } else {
-            graphics_sleep = true;
-        }
+            sdl.to_sleep()
+        };
+
+        sleep(sleep_duration);
 
         // Update graphics
-        if let Some(mut token) = sdl.update_graphics(debugger, graphics_sleep) {
+        if let Some(mut token) = sdl.update_graphics(debugger) {
             let sdl = &mut token.0;
             let ui = debugger.imgui_context.new_frame();
 
