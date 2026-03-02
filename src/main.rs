@@ -122,11 +122,10 @@ fn main() {
                 eprintln!("{e:?}");
                 exit(1);
             }
-            Ok(reset) => {
-                if !reset {
-                    break;
-                }
+            Ok(false) => {
+                break;
             }
+            _ => {}
         }
     }
 }
