@@ -33,7 +33,10 @@ fn gameboy_emulator(
 ) -> Result<bool, Error> {
     let memory = MemoryMapping::new(Rom::new(&args.file)?);
 
+    let mut texture_creator = sdl.canvas.texture_creator();
     let mut cpu = Cpu::new(memory);
+
+    cpu.memory.vram.create_textures(&mut texture_creator)?;
 
     let mut errors = Vec::new();
 
@@ -75,9 +78,12 @@ fn gameboy_emulator(
 
         sleep(sleep_duration);
 
+        cpu.memory.vram.update_textures()?;
+
         // Update graphics
         if let Some(mut token) = sdl.update_graphics(debugger) {
             let sdl = &mut token.0;
+            cpu.memory.vram.render_textures(&mut sdl.canvas)?;
             let ui = debugger.imgui_context.new_frame();
 
             let reset = Debugger::display_execution_debugger(

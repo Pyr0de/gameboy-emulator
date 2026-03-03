@@ -7,13 +7,13 @@ use crate::{
 };
 
 #[derive(Debug)]
-pub(crate) struct Cpu {
+pub(crate) struct Cpu<'a> {
     pub registers: Registers,
-    pub memory: MemoryMapping,
+    pub memory: MemoryMapping<'a>,
 }
 
-impl Cpu {
-    pub(crate) fn new(memory: MemoryMapping) -> Self {
+impl<'a> Cpu<'a> {
+    pub(crate) fn new(memory: MemoryMapping<'a>) -> Self {
         Cpu {
             registers: Registers::new(),
             memory,

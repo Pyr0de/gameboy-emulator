@@ -8,6 +8,7 @@ anyhow = "1.0.100"
 clap = { version = "4.5.56", features = ["derive"] }
 sdl3 = "0.17.3"
 imgui = { version = "0.12.0", features = ["tables-api"]}
+sdl3-sys = { version = "0.6.1", features = ["build-from-source"] }
 
 [dependencies.imgui-sdl3-support]
 git = "https://github.com/Pyr0de/imgui-sdl3-support"

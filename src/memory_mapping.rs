@@ -11,9 +11,9 @@ use imgui::{StyleColor, TableFlags};
 use crate::{graphics::Graphics, interrupt::Interrupt, timer::Timer};
 
 #[derive(Debug)]
-pub(crate) struct MemoryMapping {
+pub(crate) struct MemoryMapping<'a> {
     pub rom: Rom,
-    pub vram: Graphics,
+    pub vram: Graphics<'a>,
     pub external_ram: [u8; 0x2000],
     pub wram: WRam,
     pub stack: [u8; 0x7F],
@@ -25,7 +25,7 @@ pub(crate) struct MemoryMapping {
     debugger_selected: u16,
 }
 
-impl Default for MemoryMapping {
+impl<'a> Default for MemoryMapping<'a> {
     fn default() -> Self {
         Self {
             rom: Rom::default(),
@@ -42,7 +42,7 @@ impl Default for MemoryMapping {
     }
 }
 
-impl MemoryMapping {
+impl<'a> MemoryMapping<'a> {
     pub fn new(rom: Rom) -> Self {
         Self {
             rom,
@@ -168,9 +168,7 @@ impl MemoryMapping {
                 }
             });
     }
-}
 
-impl MemoryMapping {
     pub fn get(&self, index: u16) -> Result<&u8> {
         Ok(match index {
             0x0..=0x7FFF => &self.rom[index],
