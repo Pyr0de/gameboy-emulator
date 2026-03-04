@@ -3,7 +3,7 @@ use imgui::{Context, Ui};
 use imgui_sdl3_renderer::Renderer;
 use imgui_sdl3_support::SdlPlatform;
 use sdl3::{
-    render::{Canvas, TextureCreator},
+    render::{Canvas, Texture, TextureCreator},
     video::{Window, WindowContext},
 };
 
@@ -61,8 +61,13 @@ impl<'a> Debugger<'a> {
         }
     }
 
-    pub fn render(&mut self, canvas: &mut Canvas<Window>) -> Result<()> {
-        self.renderer.render(self.imgui_context.render(), canvas)?;
+    pub fn render<'b>(
+        &mut self,
+        canvas: &mut Canvas<Window>,
+        textures: &Vec<Texture<'b>>,
+    ) -> Result<()> {
+        self.renderer
+            .render(self.imgui_context.render(), canvas, textures)?;
         Ok(())
     }
 

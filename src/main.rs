@@ -31,9 +31,9 @@ fn gameboy_emulator(
     sdl: &mut SdlInstance,
     debugger: &mut Debugger,
 ) -> Result<bool, Error> {
-    let memory = MemoryMapping::new(Rom::new(&args.file)?);
-
     let mut texture_creator = sdl.canvas.texture_creator();
+
+    let memory = MemoryMapping::new(Rom::new(&args.file)?);
     let mut cpu = Cpu::new(memory);
 
     cpu.memory.vram.create_textures(&mut texture_creator)?;
@@ -105,7 +105,7 @@ fn gameboy_emulator(
                     }
                 });
 
-            debugger.render(&mut sdl.canvas)?;
+            debugger.render(&mut sdl.canvas, &cpu.memory.vram.textures)?;
             if reset {
                 return Ok(true);
             }

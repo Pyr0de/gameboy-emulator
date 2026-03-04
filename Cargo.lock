@@ -188,7 +188,7 @@ dependencies = [
 [[package]]
 name = "imgui-sdl3-renderer"
 version = "0.2.1"
-source = "git+https://github.com/Pyr0de/imgui-rs-sdl3-renderer?rev=1054cf5#1054cf530070a6eafbbf6bfe3424caa35e3b3b4b"
+source = "git+https://github.com/Pyr0de/imgui-rs-sdl3-renderer?rev=fd24c43#fd24c43444df489c527a32297427918d28d89ebb"
 dependencies = [
  "imgui",
  "sdl3",

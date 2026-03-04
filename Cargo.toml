@@ -17,5 +17,5 @@ version = "0.13.0"
 
 [dependencies.imgui-sdl3-renderer]
 git = "https://github.com/Pyr0de/imgui-rs-sdl3-renderer"
-rev = "1054cf5"
+rev = "fd24c43"
 version = "0.2.0"

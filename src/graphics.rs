@@ -3,11 +3,11 @@ use std::{
     ops::{Index, IndexMut},
 };
 
-use anyhow::{Result, bail};
+use anyhow::Result;
+use imgui::{Image, TextureId, Ui};
 use sdl3::{
     pixels::{Color, Palette, PixelFormat},
-    render::{Canvas, FRect, Texture, TextureCreator},
-    sys::pixels::SDL_PixelFormat,
+    render::{Canvas, Texture, TextureCreator},
     video::{Window, WindowContext},
 };
 
@@ -31,11 +31,18 @@ pub(crate) enum LcdControl {
     BGWindowEnable = 0x1,
 }
 
+#[derive(Debug, Default)]
+struct DebuggerContext {
+    page: usize,
+}
+
 pub(crate) struct Graphics<'a> {
     pub vram: [u8; 0x2000],
     pub lcd_control: u8,
-    textures: Option<Vec<Texture<'a>>>,
+    pub textures: Vec<Texture<'a>>,
     changed_textures: Vec<u16>,
+
+    debug: DebuggerContext,
 }
 
 impl<'a> Graphics<'a> {
@@ -43,8 +50,9 @@ impl<'a> Graphics<'a> {
         Graphics {
             vram: [0; 0x2000],
             lcd_control: 0,
-            textures: None,
+            textures: Vec::new(),
             changed_textures: Vec::new(),
+            debug: DebuggerContext::default(),
         }
     }
 
@@ -52,26 +60,24 @@ impl<'a> Graphics<'a> {
         &mut self,
         texture_creator: &'a mut TextureCreator<WindowContext>,
     ) -> Result<()> {
-        static PALETTE: [Color; 4] = [
+        static DEFAULT_COLORS: [Color; 4] = [
             Color::RGB(0xc4, 0xf0, 0xc2),
             Color::RGB(0x5a, 0xb9, 0xa8),
             Color::RGB(0x1e, 0x60, 0x6e),
             Color::RGB(0x2d, 0x1b, 0x00),
         ];
-        let palette = Palette::with_colors(&PALETTE)?;
+        let palette = Palette::with_colors(&DEFAULT_COLORS)?;
 
         // Test sprite
-        self.vram[0..16].copy_from_slice(&[
-            0x3C, 0x7E, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x7E, 0x5E, 0x7E, 0x0A, 0x7C, 0x56,
-            0x38, 0x7C,
-        ]);
-
-        let pixel_format = unsafe { PixelFormat::from_ll(SDL_PixelFormat::INDEX8) };
+        //self.vram[0..16].copy_from_slice(&[
+        //    0x3C, 0x7E, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x7E, 0x5E, 0x7E, 0x0A, 0x7C, 0x56,
+        //    0x38, 0x7C,
+        //]);
 
         let textures = (0..0x2000 / 16)
             .map(|_| {
                 let mut texture = texture_creator
-                    .create_texture_streaming(pixel_format, 8, 8)
+                    .create_texture_streaming(PixelFormat::INDEX8, 8, 8)
                     .expect("Error creating texture");
                 unsafe {
                     sdl3_sys::render::SDL_SetTexturePalette(texture.raw(), palette.raw());
@@ -81,19 +87,15 @@ impl<'a> Graphics<'a> {
             })
             .collect();
 
-        self.textures = Some(textures);
+        self.textures = textures;
 
         Ok(())
     }
 
     pub fn update_textures(&mut self) -> Result<()> {
-        let Some(textures) = &mut self.textures else {
-            bail!("Textures not created");
-        };
-
         for i in &self.changed_textures {
             let tex_id = *i as usize / 16;
-            textures[tex_id as usize].with_lock(None, |data, _| {
+            self.textures[tex_id].with_lock(None, |data, _| {
                 let (start, end) = (tex_id * 16, tex_id * 16 + 16);
                 let m = to_8bit_indexed(&self.vram[start..end]);
                 data.copy_from_slice(&m);
@@ -103,11 +105,50 @@ impl<'a> Graphics<'a> {
         Ok(())
     }
 
-    pub fn render_textures(&mut self, canvas: &mut Canvas<Window>) -> Result<()> {
-        //for i in &self.textures {
-        //    canvas.copy(&i, None, Some(FRect::new(0., 0., 256., 256.)))?;
-        //}
+    pub fn render_textures(&mut self, _canvas: &mut Canvas<Window>) -> Result<()> {
         Ok(())
+    }
+
+    pub fn display_debugger(&mut self, ui: &Ui) {
+        ui.window("Graphics")
+            .size([400., 400.], imgui::Condition::FirstUseEver)
+            .position([850., 250.], imgui::Condition::FirstUseEver)
+            .build(|| {
+                let offset = self.debug.page * 64;
+                for i in 0..64 {
+                    let texture_id = TextureId::new(offset + i + 1);
+                    Image::new(texture_id, [32., 32.]).build(ui);
+                    if i % 8 != 7 {
+                        ui.same_line();
+                    }
+                }
+
+                if ui.button("< Prev") {
+                    self.debug.page = self.debug.page.saturating_sub(1);
+                }
+                ui.same_line();
+                ui.text(format!(" Page {} ", self.debug.page + 1));
+                ui.same_line();
+                if ui.button("Next >") {
+                    self.debug.page += 1;
+                    // 64 * 6 pages exist, 2 pages for each tile data block
+                    if self.debug.page > 5 {
+                        self.debug.page = 5;
+                    }
+                }
+
+                if ui.button("Tile block 0") {
+                    self.debug.page = 0;
+                }
+                ui.same_line();
+                if ui.button("Tile block 1") {
+                    self.debug.page = 2;
+                }
+                ui.same_line();
+                if ui.button("Tile block 2") {
+                    self.debug.page = 4;
+                }
+            });
     }
 }
 
