@@ -11,6 +11,13 @@ use sdl3::{
     video::{Window, WindowContext},
 };
 
+static DEFAULT_COLORS: [Color; 4] = [
+    Color::RGB(0xc4, 0xf0, 0xc2),
+    Color::RGB(0x5a, 0xb9, 0xa8),
+    Color::RGB(0x1e, 0x60, 0x6e),
+    Color::RGB(0x2d, 0x1b, 0x00),
+];
+
 #[allow(dead_code)]
 pub(crate) enum LcdControl {
     /// LCD & PPU enable: 0 = Off; 1 = On
@@ -34,6 +41,7 @@ pub(crate) enum LcdControl {
 #[derive(Debug, Default)]
 struct DebuggerContext {
     page: usize,
+    palette_colors: [Color; 4],
 }
 
 pub(crate) struct Graphics<'a> {
@@ -60,12 +68,7 @@ impl<'a> Graphics<'a> {
         &mut self,
         texture_creator: &'a mut TextureCreator<WindowContext>,
     ) -> Result<()> {
-        static DEFAULT_COLORS: [Color; 4] = [
-            Color::RGB(0xc4, 0xf0, 0xc2),
-            Color::RGB(0x5a, 0xb9, 0xa8),
-            Color::RGB(0x1e, 0x60, 0x6e),
-            Color::RGB(0x2d, 0x1b, 0x00),
-        ];
+        self.debug.palette_colors = DEFAULT_COLORS;
         let palette = Palette::with_colors(&DEFAULT_COLORS)?;
 
         // Test sprite
@@ -111,7 +114,7 @@ impl<'a> Graphics<'a> {
 
     pub fn display_debugger(&mut self, ui: &Ui) {
         ui.window("Graphics")
-            .size([400., 400.], imgui::Condition::FirstUseEver)
+            .size([400., 500.], imgui::Condition::FirstUseEver)
             .position([850., 250.], imgui::Condition::FirstUseEver)
             .build(|| {
                 let offset = self.debug.page * 64;
@@ -147,6 +150,41 @@ impl<'a> Graphics<'a> {
                 ui.same_line();
                 if ui.button("Tile block 2") {
                     self.debug.page = 4;
+                }
+
+                let mut colors = self.debug.palette_colors.map(|color| {
+                    [
+                        color.r as f32 / 255.,
+                        color.g as f32 / 255.,
+                        color.b as f32 / 255.,
+                    ]
+                });
+
+                ui.new_line();
+                for i in 0..4 {
+                    ui.color_edit3(format!("Palette color {}", i+1), &mut colors[i]);
+                }
+
+                self.debug.palette_colors = colors.map(|color| {
+                    sdl3::pixels::Color::RGBA(
+                        (color[0] * 255.) as u8,
+                        (color[1] * 255.) as u8,
+                        (color[2] * 255.) as u8,
+                        255,
+                    )
+                });
+
+                if ui.button("Reset") {
+                    self.debug.palette_colors = DEFAULT_COLORS;
+                }
+                ui.same_line();
+                if ui.button("Set Palette") {
+                    let palette = Palette::with_colors(&self.debug.palette_colors).unwrap();
+                    for t in &self.textures {
+                        unsafe {
+                            sdl3_sys::render::SDL_SetTexturePalette(t.raw(), palette.raw());
+                        }
+                    }
                 }
             });
     }
