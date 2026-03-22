@@ -1,3 +1,5 @@
+use crate::utils::BitFlag;
+
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy)]
 pub enum InterruptPosition {
@@ -8,10 +10,16 @@ pub enum InterruptPosition {
     Joypad = 0x10,
 }
 
+impl From<InterruptPosition> for u8 {
+    fn from(value: InterruptPosition) -> Self {
+        value as u8
+    }
+}
+
 #[derive(Debug, Default)]
 pub struct Interrupt {
-    pub interrupt_enable: u8,
-    pub interrupt_flag: u8,
+    pub interrupt_enable: BitFlag<u8, InterruptPosition>,
+    pub interrupt_flag: BitFlag<u8, InterruptPosition>,
 
     ime: bool,
     set_ime: bool,
@@ -23,11 +31,11 @@ impl Interrupt {
     }
 
     pub fn handle_interrupts(&mut self) -> Option<u16> {
-        let serviceable = self.interrupt_flag & self.interrupt_enable;
+        let serviceable = self.interrupt_flag.value & self.interrupt_enable.value;
         if self.ime && serviceable != 0 {
             for i in 0..=4 {
-                if serviceable & (1 << i) != 0 {
-                    self.interrupt_flag ^= 1 << i;
+                if self.interrupt_flag.get_into(1 << i) {
+                    self.interrupt_flag.set_into(1 << i, false);
                     return Some(0x40 + i as u16 * 8);
                 }
             }
@@ -58,13 +66,13 @@ impl Interrupt {
 
     #[allow(dead_code)]
     pub fn request_int(&mut self, int: InterruptPosition) {
-        self.interrupt_flag |= int as u8;
+        self.interrupt_flag.set(int, true);
     }
 
     #[allow(dead_code)]
     pub fn enable_int(&mut self, int: InterruptPosition, val: bool) {
-        if ((self.interrupt_enable & int as u8) != 0) != val {
-            self.interrupt_enable ^= int as u8;
+        if self.interrupt_enable.get(int) != val {
+            self.interrupt_enable.set(int, true);
         }
     }
 }

@@ -8,6 +8,7 @@ mod memory_mapping;
 mod registers;
 mod sdl;
 mod timer;
+mod utils;
 
 use std::{
     process::exit,

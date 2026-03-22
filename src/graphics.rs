@@ -162,7 +162,7 @@ impl<'a> Graphics<'a> {
 
                 ui.new_line();
                 for i in 0..4 {
-                    ui.color_edit3(format!("Palette color {}", i+1), &mut colors[i]);
+                    ui.color_edit3(format!("Palette color {}", i + 1), &mut colors[i]);
                 }
 
                 self.debug.palette_colors = colors.map(|color| {

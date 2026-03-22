@@ -181,11 +181,11 @@ impl<'a> MemoryMapping<'a> {
             0xFF05 => &self.timer.timer_counter,
             0xFF06 => &self.timer.timer_modulo,
             0xFF07 => &self.timer.timer_controller,
-            0xFF0F => &self.interrupt.interrupt_flag,
+            0xFF0F => &self.interrupt.interrupt_flag.value,
             0xFF40 => &self.vram.lcd_control,
             0xFF70 => &self.wram.bank_select,
             0xFF80..=0xFFFE => &self.stack[index as usize - 0xFF80],
-            0xFFFF => &self.interrupt.interrupt_enable,
+            0xFFFF => &self.interrupt.interrupt_enable.value,
             _ => {
                 bail!("unimplemented memory 0x{:x}", index)
             }
@@ -204,11 +204,11 @@ impl<'a> MemoryMapping<'a> {
             0xFF05 => &mut self.timer.timer_counter,
             0xFF06 => &mut self.timer.timer_modulo,
             0xFF07 => &mut self.timer.timer_controller,
-            0xFF0F => &mut self.interrupt.interrupt_flag,
+            0xFF0F => &mut self.interrupt.interrupt_flag.value,
             0xFF40 => &mut self.vram.lcd_control,
             0xFF70 => &mut self.wram.bank_select,
             0xFF80..=0xFFFE => &mut self.stack[index as usize - 0xFF80],
-            0xFFFF => &mut self.interrupt.interrupt_enable,
+            0xFFFF => &mut self.interrupt.interrupt_enable.value,
             _ => {
                 bail!("unimplemented memory 0x{:x}", index)
             }
