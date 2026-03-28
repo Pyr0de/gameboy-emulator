@@ -2,7 +2,7 @@
 
 mod alu;
 
-use crate::instructions::FlagCondition;
+use crate::{instructions::FlagCondition, utils::BitFlag};
 pub use alu::{Alu, Direction};
 use imgui::*;
 
@@ -16,7 +16,7 @@ pub(super) struct Registers {
     pub e: u8,
     pub h: u8,
     pub l: u8,
-    pub f: u8,
+    pub f: BitFlag<u8, Flags>,
     pub sp: u16,
     pub pc: u16,
 }
@@ -59,6 +59,12 @@ pub(crate) enum Flags {
     CY = 0x10,
 }
 
+impl From<Flags> for u8 {
+    fn from(value: Flags) -> Self {
+        value as u8
+    }
+}
+
 impl Registers {
     pub fn new() -> Self {
         // TODO: use powerup sequence values
@@ -70,7 +76,7 @@ impl Registers {
     }
 
     pub fn get_flag(&self, flag: Flags) -> bool {
-        self.f & (flag as u8) > 0
+        self.f.get(flag)
     }
     pub fn get_flag_condition(&self, flag_condition: FlagCondition) -> bool {
         match flag_condition {
@@ -81,14 +87,14 @@ impl Registers {
         }
     }
     pub fn set_flag(&mut self, flag: Flags, set: bool, flag_mask: u8) {
-        if self.get_flag(flag) != set && flag_mask & (flag as u8) != 0 {
-            self.f ^= flag as u8;
+        if flag_mask & (flag as u8) != 0 {
+            self.f.set(flag, set);
         }
     }
 
     pub fn get_u16(&self, regs: &RegisterU16) -> u16 {
         let (hi, lo) = match regs {
-            RegisterU16::AF => (self.a, self.f),
+            RegisterU16::AF => (self.a, self.f.value),
             RegisterU16::BC => (self.b, self.c),
             RegisterU16::DE => (self.d, self.e),
             RegisterU16::HL => (self.h, self.l),
@@ -99,7 +105,7 @@ impl Registers {
 
     pub fn get_split_u16(&self, regs: &RegisterU16) -> (u8, u8) {
         match regs {
-            RegisterU16::AF => (self.a, self.f),
+            RegisterU16::AF => (self.a, self.f.value),
             RegisterU16::BC => (self.b, self.c),
             RegisterU16::DE => (self.d, self.e),
             RegisterU16::HL => (self.h, self.l),
@@ -109,7 +115,7 @@ impl Registers {
 
     pub fn set_split_u16(&mut self, regs: &RegisterU16, higher: u8, lower: u8) {
         let (hi, lo) = match regs {
-            RegisterU16::AF => (&mut self.a, &mut self.f),
+            RegisterU16::AF => (&mut self.a, &mut self.f.value),
             RegisterU16::BC => (&mut self.b, &mut self.c),
             RegisterU16::DE => (&mut self.d, &mut self.e),
             RegisterU16::HL => (&mut self.h, &mut self.l),
@@ -124,7 +130,7 @@ impl Registers {
 
     pub fn set_u16(&mut self, regs: &RegisterU16, val: u16) {
         let (hi, lo) = match regs {
-            RegisterU16::AF => (&mut self.a, &mut self.f),
+            RegisterU16::AF => (&mut self.a, &mut self.f.value),
             RegisterU16::BC => (&mut self.b, &mut self.c),
             RegisterU16::DE => (&mut self.d, &mut self.e),
             RegisterU16::HL => (&mut self.h, &mut self.l),
@@ -202,7 +208,7 @@ impl Registers {
                     add_column_u8(ui, "L", self.l);
 
                     ui.new_line();
-                    add_column_u8(ui, "F", self.f);
+                    add_column_u8(ui, "F", self.f.value);
                     add_column_flag(ui, "Z", self.get_flag(Flags::Z));
                     add_column_flag(ui, "N", self.get_flag(Flags::N));
                     add_column_flag(ui, "H", self.get_flag(Flags::H));
