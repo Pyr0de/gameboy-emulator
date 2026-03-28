@@ -11,6 +11,8 @@ use sdl3::{
     video::{Window, WindowContext},
 };
 
+use crate::utils::BitFlag;
+
 static DEFAULT_COLORS: [Color; 4] = [
     Color::RGB(0xc4, 0xf0, 0xc2),
     Color::RGB(0x5a, 0xb9, 0xa8),
@@ -19,6 +21,7 @@ static DEFAULT_COLORS: [Color; 4] = [
 ];
 
 #[allow(dead_code)]
+#[derive(Debug)]
 pub(crate) enum LcdControl {
     /// LCD & PPU enable: 0 = Off; 1 = On
     Enable = 0x80,
@@ -38,6 +41,34 @@ pub(crate) enum LcdControl {
     BGWindowEnable = 0x1,
 }
 
+impl From<LcdControl> for u8 {
+    fn from(value: LcdControl) -> Self {
+        value as u8
+    }
+}
+
+#[derive(Debug)]
+pub enum LcdStatus {
+    /// Indicates if PPU is enabled
+    PPUMode = 0b11,
+    /// Set when LY == LYC
+    LYCEqLY = 0b100,
+    /// If set, selects the Mode 0 condition for the STAT interrupt.
+    Mode0Int = 0b1000,
+    /// If set, selects the Mode 1 condition for the STAT interrupt.
+    Mode1Int = 0b10000,
+    /// If set, selects the Mode 2 condition for the STAT interrupt.
+    Mode2Int = 0b100000,
+    /// If set, selects the LYC == LY condition for the STAT interrupt.
+    LYCInt = 0b1000000,
+}
+
+impl From<LcdStatus> for u8 {
+    fn from(value: LcdStatus) -> Self {
+        value as u8
+    }
+}
+
 #[derive(Debug, Default)]
 struct DebuggerContext {
     page: usize,
@@ -46,7 +77,11 @@ struct DebuggerContext {
 
 pub(crate) struct Graphics<'a> {
     pub vram: [u8; 0x2000],
-    pub lcd_control: u8,
+    pub lcd_control: BitFlag<u8, LcdControl>,
+    pub y_coord: u8,
+    x_coord: u8,
+    pub y_comp: u8,
+    pub lcd_status: BitFlag<u8, LcdStatus>,
     pub textures: Vec<Texture<'a>>,
     changed_textures: Vec<u16>,
 
@@ -57,7 +92,11 @@ impl<'a> Graphics<'a> {
     pub(crate) fn new() -> Self {
         Graphics {
             vram: [0; 0x2000],
-            lcd_control: 0,
+            lcd_control: BitFlag::default(),
+            y_coord: 0,
+            x_coord: 0,
+            y_comp: 0,
+            lcd_status: BitFlag::default(),
             textures: Vec::new(),
             changed_textures: Vec::new(),
             debug: DebuggerContext::default(),
