@@ -62,6 +62,8 @@ fn gameboy_emulator(
                 (Err(e), false) => return Err(e),
             };
 
+            cpu.memory.vram.do_cycles(cycles, &mut cpu.memory.interrupt)?;
+
             let time_taken = last.duration_since(Instant::now());
 
             if let Instruction::STOP(_) = instruction {

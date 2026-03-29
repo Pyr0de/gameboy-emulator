@@ -11,7 +11,7 @@ use sdl3::{
     video::{Window, WindowContext},
 };
 
-use crate::utils::BitFlag;
+use crate::{interrupt::Interrupt, utils::BitFlag};
 
 static DEFAULT_COLORS: [Color; 4] = [
     Color::RGB(0xc4, 0xf0, 0xc2),
@@ -47,7 +47,7 @@ impl From<LcdControl> for u8 {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum LcdStatus {
     /// Indicates if PPU is enabled
     PPUMode = 0b11,
@@ -79,7 +79,7 @@ pub(crate) struct Graphics<'a> {
     pub vram: [u8; 0x2000],
     pub lcd_control: BitFlag<u8, LcdControl>,
     pub y_coord: u8,
-    x_coord: u8,
+    x_coord: u16,
     pub y_comp: u8,
     pub lcd_status: BitFlag<u8, LcdStatus>,
     pub textures: Vec<Texture<'a>>,
@@ -144,6 +144,32 @@ impl<'a> Graphics<'a> {
             })?;
         }
         self.changed_textures = Vec::new();
+        Ok(())
+    }
+
+    /// Updating each line at once after 172 dots in Mode 3 (ignoring penalties)
+    /// TODO: Penalties and update each dot instead of whole line
+    pub fn do_cycles(&mut self, cycles: u8, interrupt: &mut Interrupt) -> Result<()> {
+        let (old_x, old_y) = (self.x_coord, self.y_coord);
+
+        self.x_coord += cycles as u16;
+        if self.x_coord > 456 {
+            self.x_coord %= 456;
+            self.y_coord += 1;
+        }
+        if self.y_coord > 153 {
+            self.y_coord %= 153
+        }
+        
+        let mode0_int = old_x <= 252 && self.x_coord > 252 && self.lcd_status.get(LcdStatus::Mode0Int);
+        let mode1_int = old_y <= 143 && self.y_coord > 143 && self.lcd_status.get(LcdStatus::Mode1Int);
+        let mode2_int = old_x > 80 && self.x_coord <= 80 && self.lcd_status.get(LcdStatus::Mode2Int);
+        let lyc_int = self.y_coord == self.y_comp && self.lcd_status.get(LcdStatus::LYCInt);
+
+        if mode0_int || mode1_int || mode2_int || lyc_int {
+            interrupt.request_int(crate::interrupt::InterruptPosition::Lcd);
+        }
+
         Ok(())
     }
 
