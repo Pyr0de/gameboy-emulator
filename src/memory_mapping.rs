@@ -167,6 +167,11 @@ impl<'a> MemoryMapping<'a> {
                             *val_mut = n;
                         }
                     }
+                } else {
+                    ui.text(format!(
+                        "0x{:04X}: 0x-- 0b--------",
+                        self.debugger_selected
+                    ));
                 }
             });
     }
