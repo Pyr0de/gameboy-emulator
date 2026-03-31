@@ -3,12 +3,13 @@ use std::{
     ops::{Index, IndexMut},
 };
 
-use anyhow::Result;
+use anyhow::{Result, bail};
 use imgui::{Image, TextureId, Ui};
 use sdl3::{
     pixels::{Color, Palette, PixelFormat},
-    render::{Canvas, Texture, TextureCreator},
-    video::{Window, WindowContext},
+    rect::Rect,
+    render::{Texture, TextureCreator},
+    video::WindowContext,
 };
 
 use crate::{interrupt::Interrupt, utils::BitFlag};
@@ -21,7 +22,7 @@ static DEFAULT_COLORS: [Color; 4] = [
 ];
 
 #[allow(dead_code)]
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub(crate) enum LcdControl {
     /// LCD & PPU enable: 0 = Off; 1 = On
     Enable = 0x80,
@@ -85,6 +86,8 @@ pub(crate) struct Graphics<'a> {
     pub textures: Vec<Texture<'a>>,
     changed_textures: Vec<u16>,
 
+    pub bg_id: Option<TextureId>,
+
     debug: DebuggerContext,
 }
 
@@ -99,6 +102,7 @@ impl<'a> Graphics<'a> {
             lcd_status: BitFlag::default(),
             textures: Vec::new(),
             changed_textures: Vec::new(),
+            bg_id: None,
             debug: DebuggerContext::default(),
         }
     }
@@ -131,6 +135,19 @@ impl<'a> Graphics<'a> {
 
         self.textures = textures;
 
+        self.textures.push({
+            let mut texture = texture_creator
+                .create_texture_streaming(PixelFormat::INDEX8, 160, 144)
+                .expect("Error creating texture");
+            unsafe {
+                sdl3_sys::render::SDL_SetTexturePalette(texture.raw(), palette.raw());
+            }
+            texture.set_scale_mode(sdl3::render::ScaleMode::Nearest);
+            texture
+        });
+        // Considering +1 for font texture
+        self.bg_id = Some(TextureId::new(self.textures.len()));
+
         Ok(())
     }
 
@@ -160,20 +177,64 @@ impl<'a> Graphics<'a> {
         if self.y_coord > 153 {
             self.y_coord %= 153
         }
-        
-        let mode0_int = old_x <= 252 && self.x_coord > 252 && self.lcd_status.get(LcdStatus::Mode0Int);
-        let mode1_int = old_y <= 143 && self.y_coord > 143 && self.lcd_status.get(LcdStatus::Mode1Int);
-        let mode2_int = old_x > 80 && self.x_coord <= 80 && self.lcd_status.get(LcdStatus::Mode2Int);
-        let lyc_int = self.y_coord == self.y_comp && self.lcd_status.get(LcdStatus::LYCInt);
+
+        let mode0_int =
+            old_x <= 252 && self.x_coord > 252 && self.lcd_status.get(LcdStatus::Mode0Int);
+        let mode1_int =
+            old_y <= 143 && self.y_coord > 143 && self.lcd_status.get(LcdStatus::Mode1Int);
+        let mode2_int =
+            old_x > 80 && self.x_coord <= 80 && self.lcd_status.get(LcdStatus::Mode2Int);
+        let lyc_int = old_y != self.y_coord
+            && self.y_coord == self.y_comp
+            && self.lcd_status.get(LcdStatus::LYCInt);
 
         if mode0_int || mode1_int || mode2_int || lyc_int {
             interrupt.request_int(crate::interrupt::InterruptPosition::Lcd);
         }
 
+        if old_x <= 252 && self.x_coord > 252 && self.y_coord < 144 {
+            self.update_background_texture(self.y_coord)?;
+        }
+
         Ok(())
     }
 
-    pub fn render_textures(&mut self, _canvas: &mut Canvas<Window>) -> Result<()> {
+    pub fn update_background_texture(&mut self, y_coord: u8) -> Result<()> {
+        let Some(bg_id) = self.bg_id else {
+            bail!("Background texture not created");
+        };
+
+        let Some(bg) = self.textures.get_mut(bg_id.id() - 1) else {
+            bail!("Invalid background texture id");
+        };
+
+        let y_line = Rect::new(0, y_coord.into(), 160, 1);
+
+        bg.with_lock(y_line, |data, _| {
+            let starting_tile_map = if self.lcd_control.get(LcdControl::BGTileMap) {
+                0x1C00
+            } else {
+                0x1800
+            };
+            //let starting_tile_map = 0x1800;
+            let tile_map_start = starting_tile_map + 256 / 8 * (y_coord as usize / 8);
+
+            let tile_data_bit = self.lcd_control.get(LcdControl::BGWindowTileData);
+
+            for i in 0..160 / 8 {
+                let tile_data_idx = self.vram[tile_map_start + i];
+                //println!("{y_coord} {tile_map_start:X} + {i:X} = {:X} {tile_data_idx}", tile_map_start+i);
+                let tile_data_addr = match (tile_data_idx, tile_data_bit) {
+                    (0..128, false) => 0x1000 + tile_data_idx as usize * 16,
+                    (_, _) => tile_data_idx as usize * 16,
+                };
+                let src_y = y_coord as usize % 8;
+                let b1 = self.vram[tile_data_addr + src_y * 2];
+                let b2 = self.vram[tile_data_addr + src_y * 2 + 1];
+                //println!("{b1} {b2}");
+                data[i * 8..i * 8 + 8].copy_from_slice(&to_8bit_indexed_2byte(b1, b2));
+            }
+        })?;
         Ok(())
     }
 
@@ -182,6 +243,7 @@ impl<'a> Graphics<'a> {
             .size([400., 500.], imgui::Condition::FirstUseEver)
             .position([850., 250.], imgui::Condition::FirstUseEver)
             .build(|| {
+                Image::new(self.bg_id.unwrap(), [160., 143.]).build(ui);
                 let offset = self.debug.page * 64;
                 for i in 0..64 {
                     let texture_id = TextureId::new(offset + i + 1);
@@ -261,11 +323,16 @@ fn to_8bit_indexed(bytes: &[u8]) -> [u8; 64] {
     let mut ans = [0; 64];
     for i in 0..8 {
         let (b1, b2) = (bytes[2 * i], bytes[2 * i + 1]);
+        ans[i * 8..i * 8 + 8].copy_from_slice(&to_8bit_indexed_2byte(b1, b2));
+    }
+    ans
+}
 
-        for j in (0..8).rev() {
-            let b = (((b2 >> j) & 1) << 1) | ((b1 >> j) & 1);
-            ans[i * 8 + (7 - j)] = b;
-        }
+fn to_8bit_indexed_2byte(b1: u8, b2: u8) -> [u8; 8] {
+    let mut ans = [0; 8];
+    for j in (0..8).rev() {
+        let b = (((b2 >> j) & 1) << 1) | ((b1 >> j) & 1);
+        ans[7 - j] = b;
     }
     ans
 }

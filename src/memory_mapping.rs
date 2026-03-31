@@ -168,10 +168,7 @@ impl<'a> MemoryMapping<'a> {
                         }
                     }
                 } else {
-                    ui.text(format!(
-                        "0x{:04X}: 0x-- 0b--------",
-                        self.debugger_selected
-                    ));
+                    ui.text(format!("0x{:04X}: 0x-- 0b--------", self.debugger_selected));
                 }
             });
     }

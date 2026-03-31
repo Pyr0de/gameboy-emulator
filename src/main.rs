@@ -62,7 +62,9 @@ fn gameboy_emulator(
                 (Err(e), false) => return Err(e),
             };
 
-            cpu.memory.vram.do_cycles(cycles, &mut cpu.memory.interrupt)?;
+            cpu.memory
+                .vram
+                .do_cycles(cycles, &mut cpu.memory.interrupt)?;
 
             let time_taken = last.duration_since(Instant::now());
 
@@ -86,7 +88,6 @@ fn gameboy_emulator(
         // Update graphics
         if let Some(mut token) = sdl.update_graphics(debugger) {
             let sdl = &mut token.0;
-            cpu.memory.vram.render_textures(&mut sdl.canvas)?;
             let ui = debugger.imgui_context.new_frame();
 
             let reset = Debugger::display_execution_debugger(
