@@ -79,6 +79,8 @@ struct DebuggerContext {
 pub(crate) struct Graphics<'a> {
     pub vram: [u8; 0x2000],
     pub lcd_control: BitFlag<u8, LcdControl>,
+    pub scroll_x: u8,
+    pub scroll_y: u8,
     pub y_coord: u8,
     x_coord: u16,
     pub y_comp: u8,
@@ -96,6 +98,8 @@ impl<'a> Graphics<'a> {
         Graphics {
             vram: [0; 0x2000],
             lcd_control: BitFlag::default(),
+            scroll_x: 0,
+            scroll_y: 0,
             y_coord: 0,
             x_coord: 0,
             y_comp: 0,
@@ -211,28 +215,43 @@ impl<'a> Graphics<'a> {
         let y_line = Rect::new(0, y_coord.into(), 160, 1);
 
         bg.with_lock(y_line, |data, _| {
-            let starting_tile_map = if self.lcd_control.get(LcdControl::BGTileMap) {
+            let tile_map_start_addr = if self.lcd_control.get(LcdControl::BGTileMap) {
                 0x1C00
             } else {
                 0x1800
             };
             //let starting_tile_map = 0x1800;
-            let tile_map_start = starting_tile_map + 256 / 8 * (y_coord as usize / 8);
+            let offset_y_pixels = y_coord.wrapping_add(self.scroll_y) as usize;
+            let tile_map_y_offset = 256 / 8 * (offset_y_pixels / 8);
+            let tile_map_y_start = tile_map_start_addr + tile_map_y_offset;
 
             let tile_data_bit = self.lcd_control.get(LcdControl::BGWindowTileData);
 
-            for i in 0..160 / 8 {
-                let tile_data_idx = self.vram[tile_map_start + i];
-                //println!("{y_coord} {tile_map_start:X} + {i:X} = {:X} {tile_data_idx}", tile_map_start+i);
+            let mut i = 0;
+            while i < 160 {
+                let (start, end) = match i {
+                    0 => (self.scroll_x as usize % 8, 8),
+                    // Ending 7 pixels remaining
+                    153..160 => (0, self.scroll_x as usize % 8),
+                    160.. => unreachable!(),
+                    _ => (0, 8),
+                };
+
+                let offset_x_pixels = (i + self.scroll_x as usize) % 256;
+                let tile_map = tile_map_y_start + offset_x_pixels/8;
+                let tile_data_idx = self.vram[tile_map];
+
                 let tile_data_addr = match (tile_data_idx, tile_data_bit) {
                     (0..128, false) => 0x1000 + tile_data_idx as usize * 16,
                     (_, _) => tile_data_idx as usize * 16,
                 };
-                let src_y = y_coord as usize % 8;
-                let b1 = self.vram[tile_data_addr + src_y * 2];
-                let b2 = self.vram[tile_data_addr + src_y * 2 + 1];
-                //println!("{b1} {b2}");
-                data[i * 8..i * 8 + 8].copy_from_slice(&to_8bit_indexed_2byte(b1, b2));
+
+                let tile_data_offset_y = offset_y_pixels % 8;
+                let b1 = self.vram[tile_data_addr + tile_data_offset_y * 2];
+                let b2 = self.vram[tile_data_addr + tile_data_offset_y * 2 + 1];
+
+                data[i+start..i+end].copy_from_slice(&to_8bit_indexed_2byte(b1, b2)[start..end]);
+                i += end-start;
             }
         })?;
         Ok(())
@@ -243,7 +262,7 @@ impl<'a> Graphics<'a> {
             .size([400., 500.], imgui::Condition::FirstUseEver)
             .position([850., 250.], imgui::Condition::FirstUseEver)
             .build(|| {
-                Image::new(self.bg_id.unwrap(), [160., 143.]).build(ui);
+                Image::new(self.bg_id.unwrap(), [160., 144.]).build(ui);
                 let offset = self.debug.page * 64;
                 for i in 0..64 {
                     let texture_id = TextureId::new(offset + i + 1);
