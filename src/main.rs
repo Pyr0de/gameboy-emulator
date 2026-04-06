@@ -39,7 +39,7 @@ fn gameboy_emulator(
 
     cpu.memory.vram.create_textures(&mut texture_creator)?;
 
-    let mut errors = Vec::new();
+    let mut errors: Vec<(u16, String)> = Vec::new();
 
     'main: loop {
         // Handle sdl events
@@ -89,6 +89,8 @@ fn gameboy_emulator(
         if let Some(mut token) = sdl.update_graphics(debugger) {
             let sdl = &mut token.0;
             let ui = debugger.imgui_context.new_frame();
+
+            cpu.memory.vram.display_screen(&mut sdl.canvas)?;
 
             let reset = Debugger::display_execution_debugger(
                 ui,

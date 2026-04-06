@@ -8,8 +8,8 @@ use imgui::{Image, TextureId, Ui};
 use sdl3::{
     pixels::{Color, Palette, PixelFormat},
     rect::Rect,
-    render::{Texture, TextureCreator},
-    video::WindowContext,
+    render::{Canvas, FRect, Texture, TextureCreator},
+    video::{Window, WindowContext},
 };
 
 use crate::{interrupt::Interrupt, utils::BitFlag};
@@ -254,6 +254,34 @@ impl<'a> Graphics<'a> {
                 i += end-start;
             }
         })?;
+        Ok(())
+    }
+
+    pub fn display_screen(&self, canvas: &mut Canvas<Window>) -> Result<()> {
+        let Some(bg_id) = self.bg_id else {
+            bail!("Background texture not created");
+        };
+
+        let Some(bg) = self.textures.get(bg_id.id() - 1) else {
+            bail!("Invalid background texture id");
+        };
+
+        let (texture_w, texture_h) = (bg.width(), bg.height());
+        let (window_w, window_h) = canvas.window().size();
+
+        let scale_x = window_w as f64 / texture_w as f64;
+        let scale_y = window_h as f64 / texture_h as f64;
+        let scale = if scale_x < scale_y {scale_x} else {scale_y};
+        
+        let max_w = texture_w as f64 * scale;
+        let max_h = texture_h as f64 * scale;
+        let mid_x = (window_w as f64 - max_w) / 2.;
+        let mid_y = (window_h as f64 - max_h) / 2.;
+
+        let gb_screen = FRect::new(mid_x as f32, mid_y as f32, max_w as f32, max_h as f32);
+
+        canvas.copy(bg, None, Some(gb_screen))?;
+
         Ok(())
     }
 
