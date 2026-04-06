@@ -203,7 +203,7 @@ impl<'a> Graphics<'a> {
         Ok(())
     }
 
-    pub fn update_background_texture(&mut self, y_coord: u8) -> Result<()> {
+    fn update_background_texture(&mut self, y_coord: u8) -> Result<()> {
         let Some(bg_id) = self.bg_id else {
             bail!("Background texture not created");
         };
@@ -262,74 +262,82 @@ impl<'a> Graphics<'a> {
             .size([400., 500.], imgui::Condition::FirstUseEver)
             .position([850., 250.], imgui::Condition::FirstUseEver)
             .build(|| {
-                Image::new(self.bg_id.unwrap(), [160., 144.]).build(ui);
-                let offset = self.debug.page * 64;
-                for i in 0..64 {
-                    let texture_id = TextureId::new(offset + i + 1);
-                    Image::new(texture_id, [32., 32.]).build(ui);
-                    if i % 8 != 7 {
-                        ui.same_line();
-                    }
-                }
+                if let Some(_t) = ui.tab_bar("graphics") {
+                    if let Some(_r) = ui.tab_item("Tile Data") {
 
-                if ui.button("< Prev") {
-                    self.debug.page = self.debug.page.saturating_sub(1);
-                }
-                ui.same_line();
-                ui.text(format!(" Page {} ", self.debug.page + 1));
-                ui.same_line();
-                if ui.button("Next >") {
-                    self.debug.page += 1;
-                    // 64 * 6 pages exist, 2 pages for each tile data block
-                    if self.debug.page > 5 {
-                        self.debug.page = 5;
-                    }
-                }
-
-                if ui.button("Tile block 0") {
-                    self.debug.page = 0;
-                }
-                ui.same_line();
-                if ui.button("Tile block 1") {
-                    self.debug.page = 2;
-                }
-                ui.same_line();
-                if ui.button("Tile block 2") {
-                    self.debug.page = 4;
-                }
-
-                let mut colors = self.debug.palette_colors.map(|color| {
-                    [
-                        color.r as f32 / 255.,
-                        color.g as f32 / 255.,
-                        color.b as f32 / 255.,
-                    ]
-                });
-
-                ui.new_line();
-                for (i, c) in colors.iter_mut().enumerate() {
-                    ui.color_edit3(format!("Palette color {}", i + 1), c);
-                }
-
-                self.debug.palette_colors = colors.map(|color| {
-                    sdl3::pixels::Color::RGBA(
-                        (color[0] * 255.) as u8,
-                        (color[1] * 255.) as u8,
-                        (color[2] * 255.) as u8,
-                        255,
-                    )
-                });
-
-                if ui.button("Reset") {
-                    self.debug.palette_colors = DEFAULT_COLORS;
-                }
-                ui.same_line();
-                if ui.button("Set Palette") {
-                    let palette = Palette::with_colors(&self.debug.palette_colors).unwrap();
-                    for t in &self.textures {
-                        unsafe {
-                            sdl3_sys::render::SDL_SetTexturePalette(t.raw(), palette.raw());
+                        let offset = self.debug.page * 64;
+                        for i in 0..64 {
+                            let texture_id = TextureId::new(offset + i + 1);
+                            Image::new(texture_id, [32., 32.]).build(ui);
+                            if i % 8 != 7 {
+                                ui.same_line();
+                            }
                         }
+
+                        if ui.button("< Prev") {
+                            self.debug.page = self.debug.page.saturating_sub(1);
+                        }
+                        ui.same_line();
+                        ui.text(format!(" Page {} ", self.debug.page + 1));
+                        ui.same_line();
+                        if ui.button("Next >") {
+                            self.debug.page += 1;
+                            // 64 * 6 pages exist, 2 pages for each tile data block
+                            if self.debug.page > 5 {
+                                self.debug.page = 5;
+                            }
+                        }
+
+                        if ui.button("Tile block 0") {
+                            self.debug.page = 0;
+                        }
+                        ui.same_line();
+                        if ui.button("Tile block 1") {
+                            self.debug.page = 2;
+                        }
+                        ui.same_line();
+                        if ui.button("Tile block 2") {
+                            self.debug.page = 4;
+                        }
+
+                        let mut colors = self.debug.palette_colors.map(|color| {
+                            [
+                                color.r as f32 / 255.,
+                                color.g as f32 / 255.,
+                                color.b as f32 / 255.,
+                            ]
+                        });
+
+                        ui.new_line();
+                        for (i, c) in colors.iter_mut().enumerate() {
+                            ui.color_edit3(format!("Palette color {}", i + 1), c);
+                        }
+
+                        self.debug.palette_colors = colors.map(|color| {
+                            sdl3::pixels::Color::RGBA(
+                                (color[0] * 255.) as u8,
+                                (color[1] * 255.) as u8,
+                                (color[2] * 255.) as u8,
+                                255,
+                            )
+                        });
+
+                        if ui.button("Reset") {
+                            self.debug.palette_colors = DEFAULT_COLORS;
+                        }
+                        ui.same_line();
+                        if ui.button("Set Palette") {
+                            let palette = Palette::with_colors(&self.debug.palette_colors).unwrap();
+                            for t in &self.textures {
+                                unsafe {
+                                    sdl3_sys::render::SDL_SetTexturePalette(t.raw(), palette.raw());
+                                }
+                            }
+                        }
+                    }
+                    if let Some(_r) = ui.tab_item("Background") {
+                        Image::new(self.bg_id.unwrap(), [160., 144.]).build(ui);
+
                     }
                 }
             });
