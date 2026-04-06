@@ -178,8 +178,8 @@ impl<'a> Graphics<'a> {
             self.x_coord %= 456;
             self.y_coord += 1;
         }
-        if self.y_coord > 153 {
-            self.y_coord %= 153
+        if self.y_coord >= 154 {
+            self.y_coord %= 154
         }
 
         let mode0_int =
