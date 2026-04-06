@@ -2,6 +2,8 @@
 
 mod alu;
 
+use std::fmt::Display;
+
 use crate::{instructions::FlagCondition, utils::BitFlag};
 pub use alu::{Alu, Direction};
 use imgui::*;
@@ -33,6 +35,12 @@ pub(crate) enum RegisterU8 {
     L,
 }
 
+impl Display for RegisterU8 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{self:?}")
+    }
+}
+
 #[derive(Debug, Default, Clone)]
 pub(crate) enum RegisterU16 {
     AF,
@@ -41,6 +49,12 @@ pub(crate) enum RegisterU16 {
     #[default]
     HL,
     SP,
+}
+
+impl Display for RegisterU16 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{self:?}")
+    }
 }
 
 #[derive(Debug, Default, Clone, Copy)]

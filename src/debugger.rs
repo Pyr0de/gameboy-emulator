@@ -99,7 +99,7 @@ impl<'a> Debugger<'a> {
                     }
                 }
                 if pause {
-                    ui.text(format!("Next Instruction: {instruction:?}"));
+                    ui.text(format!("Next Instruction: {instruction}"));
                 }
             });
         reset
