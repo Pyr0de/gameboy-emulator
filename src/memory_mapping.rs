@@ -10,6 +10,8 @@ use imgui::{StyleColor, TableFlags};
 
 use crate::{graphics::Graphics, interrupt::Interrupt, timer::Timer};
 
+
+
 #[derive(Debug)]
 pub(crate) struct MemoryMapping<'a> {
     pub rom: Rom,
@@ -21,7 +23,6 @@ pub(crate) struct MemoryMapping<'a> {
     pub timer: Timer,
 
     debugger_offset: i16,
-    debugger_starting_address: u16,
     debugger_selected: u16,
 }
 
@@ -36,7 +37,6 @@ impl<'a> Default for MemoryMapping<'a> {
             interrupt: Interrupt::new(),
             timer: Timer::new(),
             debugger_offset: 0,
-            debugger_starting_address: 0,
             debugger_selected: 0,
         }
     }
@@ -57,99 +57,71 @@ impl<'a> MemoryMapping<'a> {
             .size([600., 600.], imgui::Condition::FirstUseEver)
             .position([250., 250.], imgui::Condition::FirstUseEver)
             .build(|| {
-                if let Some(_m) = ui.tab_bar("mem") {
-                    let mut starting_address: u16 = 0;
+                ui.text("0x");
+                ui.same_line();
+                let mut str = format!("{:04X}", self.debugger_offset as u16 * 256);
+                if ui
+                    .input_text("###search", &mut str)
+                        .enter_returns_true(true)
+                        .build()
+                        && let Ok(n) = u16::from_str_radix(&str, 16)
+                {
+                    self.debugger_selected = n;
+                    self.debugger_offset = (n/256) as i16;
+                }
 
-                    if let Some(_r) = ui.tab_item("ROM") {
-                        starting_address = 0;
+                if let Some(_table) =
+                    ui.begin_table_with_flags("", 17, TableFlags::SIZING_FIXED_FIT)
+                {
+                    ui.table_setup_column("");
+                    for i in 0..16 {
+                        ui.table_setup_column(format!("{i:X}"));
                     }
-                    if let Some(_r) = ui.tab_item("VRAM") {
-                        starting_address = 0x8000;
-                    }
-                    if let Some(_r) = ui.tab_item("External RAM") {
-                        starting_address = 0xA000;
-                    }
-                    if let Some(_r) = ui.tab_item("WRAM") {
-                        starting_address = 0xC000;
-                    }
-                    if let Some(_r) = ui.tab_item("Object Attribute Memory(OAM)") {
-                        starting_address = 0xFE00;
-                    }
-                    if let Some(_r) = ui.tab_item("IO Registers") {
-                        starting_address = 0xFF00;
-                    }
-                    if let Some(_r) = ui.tab_item("High RAM(HRAM)") {
-                        starting_address = 0xFF80;
-                    }
+                    ui.table_headers_row();
 
-                    if self.debugger_starting_address != starting_address {
-                        self.debugger_offset = 0;
-                        self.debugger_starting_address = starting_address;
-                    }
+                    for i in 0..256 {
+                        let addr = self.debugger_offset as i32 * 256 + i;
 
-                    let window_start = (starting_address / 256) * 256;
-
-                    if let Some(_table) =
-                        ui.begin_table_with_flags("", 17, TableFlags::SIZING_FIXED_FIT)
-                    {
-                        ui.table_setup_column("");
-                        for i in 0..16 {
-                            ui.table_setup_column(format!("{i:X}"));
+                        if i % 16 == 0 {
+                            ui.table_next_row();
+                            ui.table_set_column_index(0);
+                            ui.text(format!("0x{:04X} ", addr));
                         }
-                        ui.table_headers_row();
+                        ui.table_set_column_index((i % 16 + 1) as usize);
+                        let val = if let Ok(val) = &self.get(addr as u16) {
+                            format!("{val:02X}###{addr}")
+                        } else {
+                            format!("--###{addr}")
+                        };
+                        let color = if pc == addr as u16 {
+                            [0., 1., 0., 1.]
+                        } else {
+                            [1., 1., 1., 1.]
+                        };
 
-                        for i in 0..256 {
-                            let mut addr = window_start as i32 + self.debugger_offset as i32 + i;
-                            if addr < u16::MIN.into() {
-                                addr = u16::MIN.into();
-                                self.debugger_offset = 0;
-                            }
-                            if addr > u16::MAX.into() {
-                                addr = u16::MAX.into();
-                                self.debugger_offset = 0;
-                            }
+                        let _text_color = ui.push_style_color(StyleColor::Text, color);
+                        let _button_color = if self.debugger_selected == addr as u16 {
+                            Some(
+                                ui.push_style_color(StyleColor::Button, [0., 0.6, 0.8, 1.]),
+                            )
+                        } else {
+                            None
+                        };
 
-                            if i % 16 == 0 {
-                                ui.table_next_row();
-                                ui.table_set_column_index(0);
-                                ui.text(format!("0x{:04X} ", addr));
-                            }
-                            ui.table_set_column_index((i % 16 + 1) as usize);
-                            let val = if let Ok(val) = &self.get(addr as u16) {
-                                format!("{val:02X}###{addr}")
-                            } else {
-                                format!("--###{addr}")
-                            };
-                            let color = if pc == addr as u16 {
-                                [0., 1., 0., 1.]
-                            } else {
-                                [1., 1., 1., 1.]
-                            };
-
-                            {
-                                let _text_color = ui.push_style_color(StyleColor::Text, color);
-                                let _button_color = if starting_address == addr as u16 {
-                                    Some(
-                                        ui.push_style_color(StyleColor::Button, [0., 0.6, 0.8, 1.]),
-                                    )
-                                } else {
-                                    None
-                                };
-                                if ui.button(val) {
-                                    self.debugger_selected = addr as u16;
-                                }
-                            }
+                        if ui.button(val) {
+                            self.debugger_selected = addr as u16;
                         }
-                    }
-                    if ui.button("< Prev") {
-                        self.debugger_offset -= 256;
-                    }
-                    ui.same_line();
-                    if ui.button("Next >") {
-                        self.debugger_offset += 256;
                     }
                 }
+                if ui.button("< Prev") {
+                    self.debugger_offset -= 1;
+                }
+                ui.same_line();
+                if ui.button("Next >") {
+                    self.debugger_offset += 1;
+                }
                 ui.new_line();
+                self.debugger_offset = self.debugger_offset.clamp(0, 255);
                 if let Ok(val) = self.get(self.debugger_selected) {
                     ui.text(format!(
                         "0x{:04X}: 0x{val:02X} 0b{val:08b}",
