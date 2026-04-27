@@ -1,8 +1,5 @@
 use std::{
-    fs::File,
-    io::Read,
-    ops::{Index, IndexMut},
-    path::Path,
+    fs::File, io::Read, ops::{Index, IndexMut}, path::Path
 };
 
 use anyhow::{Result, bail};
@@ -57,6 +54,31 @@ impl<'a> MemoryMapping<'a> {
             .size([600., 600.], imgui::Condition::FirstUseEver)
             .position([250., 250.], imgui::Condition::FirstUseEver)
             .build(|| {
+                let memory_areas = ["ROM", "VRAM", "External RAM", "WRAM", "OAM", "IO Registers", "HRAM"];
+                let mut current_area = match self.debugger_offset as u16 * 256 {
+                    0x0000..0x8000 => 0,
+                    0x8000..0xA000 => 1,
+                    0xA000..0xC000 => 2,
+                    0xC000..0xFE00 => 3,
+                    0xFE00..0xFF00 => 4,
+                    0xFF00..0xFF80 => 5,
+                    0xFF80..=0xFFFF => 6,
+                };
+                if ui.combo_simple_string("###memory_area", &mut current_area, &memory_areas) {
+                    let addr: u16 = match current_area {
+                        0 => 0x0000,
+                        1 => 0x8000,
+                        2 => 0xA000,
+                        3 => 0xC000,
+                        4 => 0xFE00,
+                        5 => 0xFF00,
+                        6 => 0xFF80,
+                        _ => unreachable!()
+                    };
+                    self.debugger_offset = (addr / 256) as i16;
+                    self.debugger_selected = addr;
+                }
+
                 ui.text("0x");
                 ui.same_line();
                 let mut str = format!("{:04X}", self.debugger_offset as u16 * 256);
@@ -115,6 +137,11 @@ impl<'a> MemoryMapping<'a> {
                 }
                 if ui.button("< Prev") {
                     self.debugger_offset -= 1;
+                }
+                ui.same_line();
+                if ui.button("PC") {
+                    self.debugger_selected = pc;
+                    self.debugger_offset = (pc / 256) as i16;
                 }
                 ui.same_line();
                 if ui.button("Next >") {
