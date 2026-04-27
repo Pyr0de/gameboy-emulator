@@ -1,5 +1,5 @@
 use anyhow::Result;
-use imgui::{Context, Ui};
+use imgui::{Context, StyleColor, TableFlags, Ui};
 use imgui_sdl3_renderer::Renderer;
 use imgui_sdl3_support::SdlPlatform;
 use sdl3::{
@@ -23,6 +23,7 @@ pub struct Debugger<'a> {
     pub renderer: Renderer<'a>,
 
     pub execution_state: ExecutionState,
+    pub breakpoints: Vec<u16>,
 }
 
 impl<'a> Debugger<'a> {
@@ -47,6 +48,7 @@ impl<'a> Debugger<'a> {
             platform,
             renderer,
             execution_state: ExecutionState::default(),
+            breakpoints: Vec::new(),
         })
     }
 
@@ -103,5 +105,53 @@ impl<'a> Debugger<'a> {
                 }
             });
         reset
+    }
+
+    pub fn display_breakpoint_debugger(ui: &mut Ui, breakpoints: &mut Vec<u16>, pc: u16) {
+        ui.window("Breakpoints")
+            .size([200., 200.], imgui::Condition::FirstUseEver)
+            .position([850., 50.], imgui::Condition::FirstUseEver)
+            .build(|| {
+                if ui.button("Break at current PC") && !breakpoints.contains(&pc) {
+                    breakpoints.push(pc);
+                }
+                ui.text("0x");
+                ui.same_line();
+                let mut str = String::from("0000");
+                if ui
+                    .input_text("###breakpoint_input", &mut str)
+                    .enter_returns_true(true)
+                    .build()
+                    && let Ok(n) = u16::from_str_radix(&str, 16)
+                    && !breakpoints.contains(&n)
+                {
+                    breakpoints.push(n);
+                }
+
+                if let Some(_table) =
+                    ui.begin_table_with_flags("breakpoints", 2, TableFlags::SIZING_FIXED_FIT)
+                {
+                    ui.table_setup_column("");
+                    ui.table_setup_column("Address");
+                    ui.table_headers_row();
+
+                    for (i, addr) in breakpoints.clone().iter().enumerate() {
+                        ui.table_next_row();
+                        ui.table_set_column_index(0);
+                        if ui.button(format!("-###{addr}")) {
+                            breakpoints.remove(i);
+                        }
+                        ui.table_set_column_index(1);
+
+                        let color = if &pc == addr {
+                            [0., 1., 0., 1.]
+                        } else {
+                            [1., 1., 1., 1.]
+                        };
+                        let _text_color = ui.push_style_color(StyleColor::Text, color);
+                        ui.text(format!("0x{addr:04X}"));
+                    }
+                }
+            });
     }
 }

@@ -49,7 +49,6 @@ fn gameboy_emulator(
 
         // Run execute instruction
         let (instruction, inc) = cpu.get_instruction()?;
-
         let sleep_duration = if debugger.should_execute() {
             let last = Instant::now();
             let pc = cpu.registers.pc;
@@ -76,6 +75,11 @@ fn gameboy_emulator(
             //              M-Cycles/sec = 4194304/4 = 1048576 M-cycles/sec
             //              1 M-cycles takes 1/1048576 sec = 0.000000954 sec
             //                                             = 954 ns
+
+            if debugger.breakpoints.contains(&cpu.registers.pc) {
+                debugger.execution_state = debugger::ExecutionState::Pause;
+            }
+
             Duration::from_nanos(954 * cycles as u64).saturating_sub(time_taken)
         } else {
             sdl.to_sleep()
@@ -97,6 +101,7 @@ fn gameboy_emulator(
                 &mut debugger.execution_state,
                 instruction,
             );
+            Debugger::display_breakpoint_debugger(ui, &mut debugger.breakpoints, cpu.registers.pc);
 
             cpu.registers.display_debugger(ui);
             cpu.memory.display_debugger(ui, cpu.registers.pc);
