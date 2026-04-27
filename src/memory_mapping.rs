@@ -1,13 +1,14 @@
 use std::{
-    fs::File, io::Read, ops::{Index, IndexMut}, path::Path
+    fs::File,
+    io::Read,
+    ops::{Index, IndexMut},
+    path::Path,
 };
 
 use anyhow::{Result, bail};
 use imgui::{StyleColor, TableFlags};
 
 use crate::{graphics::Graphics, interrupt::Interrupt, timer::Timer};
-
-
 
 #[derive(Debug)]
 pub(crate) struct MemoryMapping<'a> {
@@ -54,7 +55,15 @@ impl<'a> MemoryMapping<'a> {
             .size([600., 600.], imgui::Condition::FirstUseEver)
             .position([250., 250.], imgui::Condition::FirstUseEver)
             .build(|| {
-                let memory_areas = ["ROM", "VRAM", "External RAM", "WRAM", "OAM", "IO Registers", "HRAM"];
+                let memory_areas = [
+                    "ROM",
+                    "VRAM",
+                    "External RAM",
+                    "WRAM",
+                    "OAM",
+                    "IO Registers",
+                    "HRAM",
+                ];
                 let mut current_area = match self.debugger_offset as u16 * 256 {
                     0x0000..0x8000 => 0,
                     0x8000..0xA000 => 1,
@@ -73,7 +82,7 @@ impl<'a> MemoryMapping<'a> {
                         4 => 0xFE00,
                         5 => 0xFF00,
                         6 => 0xFF80,
-                        _ => unreachable!()
+                        _ => unreachable!(),
                     };
                     self.debugger_offset = (addr / 256) as i16;
                     self.debugger_selected = addr;
@@ -84,12 +93,12 @@ impl<'a> MemoryMapping<'a> {
                 let mut str = format!("{:04X}", self.debugger_offset as u16 * 256);
                 if ui
                     .input_text("###search", &mut str)
-                        .enter_returns_true(true)
-                        .build()
-                        && let Ok(n) = u16::from_str_radix(&str, 16)
+                    .enter_returns_true(true)
+                    .build()
+                    && let Ok(n) = u16::from_str_radix(&str, 16)
                 {
                     self.debugger_selected = n;
-                    self.debugger_offset = (n/256) as i16;
+                    self.debugger_offset = (n / 256) as i16;
                 }
 
                 if let Some(_table) =
@@ -123,9 +132,7 @@ impl<'a> MemoryMapping<'a> {
 
                         let _text_color = ui.push_style_color(StyleColor::Text, color);
                         let _button_color = if self.debugger_selected == addr as u16 {
-                            Some(
-                                ui.push_style_color(StyleColor::Button, [0., 0.6, 0.8, 1.]),
-                            )
+                            Some(ui.push_style_color(StyleColor::Button, [0., 0.6, 0.8, 1.]))
                         } else {
                             None
                         };

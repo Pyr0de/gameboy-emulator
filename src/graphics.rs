@@ -238,7 +238,7 @@ impl<'a> Graphics<'a> {
                 };
 
                 let offset_x_pixels = (i + self.scroll_x as usize) % 256;
-                let tile_map = tile_map_y_start + offset_x_pixels/8;
+                let tile_map = tile_map_y_start + offset_x_pixels / 8;
                 let tile_data_idx = self.vram[tile_map];
 
                 let tile_data_addr = match (tile_data_idx, tile_data_bit) {
@@ -250,8 +250,9 @@ impl<'a> Graphics<'a> {
                 let b1 = self.vram[tile_data_addr + tile_data_offset_y * 2];
                 let b2 = self.vram[tile_data_addr + tile_data_offset_y * 2 + 1];
 
-                data[i+start..i+end].copy_from_slice(&to_8bit_indexed_2byte(b1, b2)[start..end]);
-                i += end-start;
+                data[i + start..i + end]
+                    .copy_from_slice(&to_8bit_indexed_2byte(b1, b2)[start..end]);
+                i += end - start;
             }
         })?;
         Ok(())
@@ -271,8 +272,8 @@ impl<'a> Graphics<'a> {
 
         let scale_x = window_w as f64 / texture_w as f64;
         let scale_y = window_h as f64 / texture_h as f64;
-        let scale = if scale_x < scale_y {scale_x} else {scale_y};
-        
+        let scale = if scale_x < scale_y { scale_x } else { scale_y };
+
         let max_w = texture_w as f64 * scale;
         let max_h = texture_h as f64 * scale;
         let mid_x = (window_w as f64 - max_w) / 2.;
@@ -292,7 +293,6 @@ impl<'a> Graphics<'a> {
             .build(|| {
                 if let Some(_t) = ui.tab_bar("graphics") {
                     if let Some(_r) = ui.tab_item("Tile Data") {
-
                         let offset = self.debug.page * 64;
                         for i in 0..64 {
                             let texture_id = TextureId::new(offset + i + 1);
@@ -365,7 +365,6 @@ impl<'a> Graphics<'a> {
                     }
                     if let Some(_r) = ui.tab_item("Background") {
                         Image::new(self.bg_id.unwrap(), [160., 144.]).build(ui);
-
                     }
                 }
             });
