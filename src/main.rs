@@ -58,7 +58,10 @@ fn gameboy_emulator(
                     errors.push((pc, format!("{e:?}")));
                     continue;
                 }
-                (Err(e), false) => return Err(e),
+                (Err(e), false) => {
+                    eprintln!("{e:?}");
+                    continue;
+                }
             };
 
             cpu.memory
@@ -92,9 +95,13 @@ fn gameboy_emulator(
         // Update graphics
         if let Some(mut token) = sdl.update_graphics(debugger) {
             let sdl = &mut token.0;
-            let ui = debugger.imgui_context.new_frame();
 
             cpu.memory.vram.display_screen(&mut sdl.canvas)?;
+
+            if !args.debug {
+                continue;
+            }
+            let ui = debugger.imgui_context.new_frame();
 
             let reset = Debugger::display_execution_debugger(
                 ui,
@@ -106,7 +113,6 @@ fn gameboy_emulator(
             cpu.registers.display_debugger(ui);
             cpu.memory.display_debugger(ui, cpu.registers.pc);
             cpu.memory.vram.display_debugger(ui);
-
 
             ui.window("Errors")
                 .position([500., 50.], imgui::Condition::FirstUseEver)
@@ -130,11 +136,19 @@ fn gameboy_emulator(
 
 fn main() {
     let args = Args::new();
-    let window_name = format!("Emulator: {}", args.file.to_str().unwrap_or(""));
+    let debugger_str = if args.debug { " (Debug)" } else { "" };
+    let window_name = format!(
+        "Emulator{}: {}",
+        debugger_str,
+        args.file.to_str().unwrap_or("")
+    );
 
     let mut sdl = SdlInstance::new(&window_name, 1600, 900).expect("Error Initializing SDL");
     let texture_creator = sdl.canvas.texture_creator();
     let mut debugger = Debugger::new(&texture_creator).expect("Error Initializing Imgui");
+    if !args.debug {
+        debugger.execution_state = debugger::ExecutionState::Execute;
+    }
 
     loop {
         match gameboy_emulator(&args, &mut sdl, &mut debugger) {
