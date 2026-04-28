@@ -49,8 +49,6 @@ impl<'a> MemoryMapping<'a> {
     }
 
     pub fn display_debugger(&mut self, ui: &imgui::Ui, pc: u16) {
-        self.vram.display_debugger(ui);
-
         ui.window("Memory")
             .size([600., 600.], imgui::Condition::FirstUseEver)
             .position([250., 250.], imgui::Condition::FirstUseEver)

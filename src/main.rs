@@ -105,6 +105,8 @@ fn gameboy_emulator(
 
             cpu.registers.display_debugger(ui);
             cpu.memory.display_debugger(ui, cpu.registers.pc);
+            cpu.memory.vram.display_debugger(ui);
+
 
             ui.window("Errors")
                 .position([500., 50.], imgui::Condition::FirstUseEver)
