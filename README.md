@@ -23,6 +23,9 @@ Options:
 - [X] Interrupts
 - [X] Timer
 - [ ] Graphics
+    - [X] Background
+    - [ ] Window
+    - [ ] OAM
 - [ ] Audio
 - [ ] MBC
 - [ ] Joypad input
@@ -31,5 +34,6 @@ Options:
 <summary>Screenshots</summary>
 
 ![Screenshot 1](screenshots/1.png)
+![Screenshot 2](screenshots/2.png)
 
 </details>
