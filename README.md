@@ -1,9 +1,13 @@
 # Gameboy Emulator
 
-## Run
+A work-in-progress gameboy emulator written in Rust for learning purposes.
+It also provides basic debugging tools to pause execution, step through instructions,
+setting breakpoints and inspecting memory and CPU states
 
-```sh
-cargo run -- [OPTIONS] <FILE>
+## Usage
+
+```bash
+./gameboy-emulator [OPTIONS] [FILE]
 ```
 ```
 Arguments
@@ -12,6 +16,24 @@ Arguments
 Options:
         `--debug`
   `-h`, `--help`   Print help
+```
+
+## Building
+
+### Prerequisites
+
+- CMake
+- Dependencies to build SDL3 from source
+
+### Run
+
+```bash
+git clone https://github.com/Pyr0de/gameboy-emulator
+cd gameboy-emulator
+```
+
+```bash
+cargo run --release -- [OPTIONS] <FILE>
 ```
 
 ## Todo
@@ -37,3 +59,8 @@ Options:
 ![Screenshot 2](screenshots/2.png)
 
 </details>
+
+## References
+
+- [gbdev.io](https://gbdev.io/)
+- [Pan Docs](https://gbdev.io/pandocs/)
