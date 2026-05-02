@@ -235,25 +235,25 @@ mod Alu_test {
         let mut reg = Registers::default();
         reg.a = Alu::add_u8(&mut reg, 0, 3, false, Flags::All as u8);
         assert_eq!(reg.a, 3);
-        assert_eq!(reg.f, 0);
+        assert_eq!(reg.f.value, 0);
 
         reg.a = Alu::add_u8(&mut reg, 255, 1, false, Flags::All as u8);
         assert_eq!(reg.a, 0);
-        assert_eq!(reg.f, Flags::Z as u8 | Flags::CY as u8 | Flags::H as u8);
+        assert_eq!(reg.f.value, Flags::Z as u8 | Flags::CY as u8 | Flags::H as u8);
 
-        reg.f = 0;
+        reg.f.value = 0;
         reg.a = Alu::add_u8(&mut reg, 255, 1, false, Flags::All as u8 ^ Flags::CY as u8);
-        assert!(reg.f & Flags::CY as u8 == 0);
+        assert!(reg.f.value & Flags::CY as u8 == 0);
 
         reg.set_u16(&RegisterU16::HL, 0xfff);
         Alu::add_u16(&mut reg, &RegisterU16::HL, 1, false, Flags::All as u8);
         assert_eq!(reg.get_u16(&RegisterU16::HL), 0x1000);
-        assert_eq!(reg.f, Flags::H as u8);
+        assert_eq!(reg.f.value, Flags::H as u8);
 
         reg.set_u16(&RegisterU16::HL, 0xffff);
         Alu::add_u16(&mut reg, &RegisterU16::HL, 1, false, Flags::All as u8);
         assert_eq!(reg.get_u16(&RegisterU16::HL), 0);
-        assert_eq!(reg.f, Flags::H as u8 | Flags::Z as u8 | Flags::CY as u8);
+        assert_eq!(reg.f.value, Flags::H as u8 | Flags::Z as u8 | Flags::CY as u8);
     }
 
     #[test]
@@ -262,11 +262,11 @@ mod Alu_test {
 
         reg.a = Alu::sub(&mut reg, 1, 1, false, Flags::All as u8);
         assert_eq!(reg.a, 0);
-        assert_eq!(reg.f, Flags::Z as u8 | Flags::N as u8);
+        assert_eq!(reg.f.value, Flags::Z as u8 | Flags::N as u8);
 
         reg.a = Alu::sub(&mut reg, 0, 1, false, Flags::All as u8);
         assert_eq!(reg.a, 255);
-        assert_eq!(reg.f, Flags::N as u8 | Flags::CY as u8 | Flags::H as u8);
+        assert_eq!(reg.f.value, Flags::N as u8 | Flags::CY as u8 | Flags::H as u8);
     }
 
     #[test]
@@ -275,82 +275,82 @@ mod Alu_test {
         reg.a = 2;
         Alu::cmp(&mut reg, 2);
         assert_eq!(reg.a, 2);
-        assert_eq!(reg.f, Flags::Z as u8 | Flags::N as u8);
+        assert_eq!(reg.f.value, Flags::Z as u8 | Flags::N as u8);
 
         reg.a = 1;
         Alu::cmp(&mut reg, 2);
         assert_eq!(reg.a, 1);
-        assert_eq!(reg.f, Flags::CY as u8 | Flags::N as u8 | Flags::H as u8);
+        assert_eq!(reg.f.value, Flags::CY as u8 | Flags::N as u8 | Flags::H as u8);
 
         reg.a = 2;
         Alu::cmp(&mut reg, 1);
         assert_eq!(reg.a, 2);
-        assert_eq!(reg.f, Flags::N as u8);
+        assert_eq!(reg.f.value, Flags::N as u8);
     }
 
     #[test]
     fn dda() {
         let mut reg = Registers::default();
-        reg.f = 0;
+        reg.f.value = 0;
         reg.a = 0x77;
         Alu::daa(&mut reg);
         assert_eq!(reg.a, 0x77);
 
-        reg.f = 0;
+        reg.f.value = 0;
         reg.a = 0x7C;
         Alu::daa(&mut reg);
         assert_eq!(reg.a, 0x82);
 
-        reg.f = Flags::H as u8;
+        reg.f.value = Flags::H as u8;
         reg.a = 0x9C;
         Alu::daa(&mut reg);
         assert_eq!(reg.a, 0x02);
-        assert_eq!(reg.f, Flags::CY as u8);
+        assert_eq!(reg.f.value, Flags::CY as u8);
 
-        reg.f = Flags::H as u8 | Flags::N as u8;
+        reg.f.value = Flags::H as u8 | Flags::N as u8;
         reg.a = 0x0D;
         Alu::daa(&mut reg);
         assert_eq!(reg.a, 0x07);
-        assert_eq!(reg.f, Flags::N as u8);
+        assert_eq!(reg.f.value, Flags::N as u8);
     }
 
     #[test]
     fn rotate() {
         let mut reg = Registers::default();
-        reg.f = 0;
+        reg.f.value = 0;
         assert_eq!(
             Alu::rotate(&mut reg, Direction::Left, 0b0010, false),
             0b0100
         );
-        assert_eq!(reg.f, 0);
+        assert_eq!(reg.f.value, 0);
 
-        reg.f = 0;
+        reg.f.value = 0;
         assert_eq!(Alu::rotate(&mut reg, Direction::Left, 0x80, false), 1);
-        assert_eq!(reg.f, Flags::CY as u8);
+        assert_eq!(reg.f.value, Flags::CY as u8);
 
-        reg.f = 0;
+        reg.f.value = 0;
         assert_eq!(Alu::rotate(&mut reg, Direction::Left, 0x80, true), 0);
-        assert_eq!(reg.f, Flags::CY as u8 | Flags::Z as u8);
+        assert_eq!(reg.f.value, Flags::CY as u8 | Flags::Z as u8);
 
-        reg.f = Flags::CY as u8;
+        reg.f.value = Flags::CY as u8;
         assert_eq!(Alu::rotate(&mut reg, Direction::Left, 0x80, true), 1);
-        assert_eq!(reg.f, Flags::CY as u8);
+        assert_eq!(reg.f.value, Flags::CY as u8);
 
-        reg.f = 0;
+        reg.f.value = 0;
         assert_eq!(Alu::rotate(&mut reg, Direction::Right, 0b0010, false), 1);
-        assert_eq!(reg.f, 0);
+        assert_eq!(reg.f.value, 0);
 
-        reg.f = 0;
+        reg.f.value = 0;
         assert_eq!(Alu::rotate(&mut reg, Direction::Right, 0x01, false), 0x80);
-        assert_eq!(reg.f, Flags::CY as u8);
+        assert_eq!(reg.f.value, Flags::CY as u8);
 
-        reg.f = 0;
+        reg.f.value = 0;
         assert_eq!(Alu::rotate(&mut reg, Direction::Right, 0x01, true), 0);
-        assert_eq!(reg.f, Flags::CY as u8 | Flags::Z as u8);
+        assert_eq!(reg.f.value, Flags::CY as u8 | Flags::Z as u8);
 
-        reg.f = Flags::CY as u8;
+        reg.f.value = Flags::CY as u8;
         assert_eq!(Alu::rotate(&mut reg, Direction::Right, 0x01, true), 0x80);
-        assert_eq!(reg.f, Flags::CY as u8);
+        assert_eq!(reg.f.value, Flags::CY as u8);
     }
 
     #[test]
