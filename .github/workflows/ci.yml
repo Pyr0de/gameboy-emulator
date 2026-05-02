@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main", "actions" ]
+    pull_request:
+      branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            exec: gameboy-emulator
+            sdl: libSDL3.so.0
+            archive: tar.gz
+          - os: windows-latest
+            exec: gameboy-emulator.exe
+            sdl: SDL3.dll
+            archive: zip
+          - os: macos-latest
+            exec: gameboy-emulator
+            sdl: libSDL3.0.dylib
+            archive: tar.gz
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install SDL Build Dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt -y install build-essential git make \
+          pkg-config cmake ninja-build gnome-desktop-testing libasound2-dev libpulse-dev \
+          libaudio-dev libfribidi-dev libjack-dev libsndio-dev libx11-dev libxext-dev \
+          libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev \
+          libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev \
+          libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev libthai-dev \
+          libpipewire-0.3-dev libwayland-dev libdecor-0-dev liburing-dev
+      - name: Build
+        run: cargo build --release
+      - name: Archive
+        run: |
+          cd target/release
+          tar -caf gameboy-emulator-${{ matrix.os }}.${{ matrix.archive }} ${{ matrix.exec }} ${{ matrix.sdl }}
+      - name: Upload
+        uses: actions/upload-artifact@v7
+        with:
+          path: target/release/gameboy-emulator-${{ matrix.os }}.${{ matrix.archive }}
+          archive: false
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install SDL Build Dependencies
+        run: |
+          sudo apt -y install build-essential git make \
+          pkg-config cmake ninja-build gnome-desktop-testing libasound2-dev libpulse-dev \
+          libaudio-dev libfribidi-dev libjack-dev libsndio-dev libx11-dev libxext-dev \
+          libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev \
+          libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev \
+          libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev libthai-dev \
+          libpipewire-0.3-dev libwayland-dev libdecor-0-dev liburing-dev
+      - name: Check
+        run: cargo check
+      - name: Formatting
+        run: cargo fmt --check
+      - name: Clippy
+        run: cargo clippy
+      - name: Run tests
+        run: cargo test
+
