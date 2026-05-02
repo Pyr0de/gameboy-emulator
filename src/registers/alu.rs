@@ -239,7 +239,10 @@ mod Alu_test {
 
         reg.a = Alu::add_u8(&mut reg, 255, 1, false, Flags::All as u8);
         assert_eq!(reg.a, 0);
-        assert_eq!(reg.f.value, Flags::Z as u8 | Flags::CY as u8 | Flags::H as u8);
+        assert_eq!(
+            reg.f.value,
+            Flags::Z as u8 | Flags::CY as u8 | Flags::H as u8
+        );
 
         reg.f.value = 0;
         reg.a = Alu::add_u8(&mut reg, 255, 1, false, Flags::All as u8 ^ Flags::CY as u8);
@@ -253,7 +256,10 @@ mod Alu_test {
         reg.set_u16(&RegisterU16::HL, 0xffff);
         Alu::add_u16(&mut reg, &RegisterU16::HL, 1, false, Flags::All as u8);
         assert_eq!(reg.get_u16(&RegisterU16::HL), 0);
-        assert_eq!(reg.f.value, Flags::H as u8 | Flags::Z as u8 | Flags::CY as u8);
+        assert_eq!(
+            reg.f.value,
+            Flags::H as u8 | Flags::Z as u8 | Flags::CY as u8
+        );
     }
 
     #[test]
@@ -266,7 +272,10 @@ mod Alu_test {
 
         reg.a = Alu::sub(&mut reg, 0, 1, false, Flags::All as u8);
         assert_eq!(reg.a, 255);
-        assert_eq!(reg.f.value, Flags::N as u8 | Flags::CY as u8 | Flags::H as u8);
+        assert_eq!(
+            reg.f.value,
+            Flags::N as u8 | Flags::CY as u8 | Flags::H as u8
+        );
     }
 
     #[test]
@@ -280,7 +289,10 @@ mod Alu_test {
         reg.a = 1;
         Alu::cmp(&mut reg, 2);
         assert_eq!(reg.a, 1);
-        assert_eq!(reg.f.value, Flags::CY as u8 | Flags::N as u8 | Flags::H as u8);
+        assert_eq!(
+            reg.f.value,
+            Flags::CY as u8 | Flags::N as u8 | Flags::H as u8
+        );
 
         reg.a = 2;
         Alu::cmp(&mut reg, 1);
