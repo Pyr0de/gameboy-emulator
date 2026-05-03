@@ -1,5 +1,7 @@
 # Gameboy Emulator
 
+[![CI](https://github.com/Pyr0de/gameboy-emulator/actions/workflows/ci.yml/badge.svg)](https://github.com/Pyr0de/gameboy-emulator/actions/workflows/ci.yml)
+
 A work-in-progress gameboy emulator written in Rust for learning purposes.
 It also provides basic debugging tools to pause execution, step through instructions,
 setting breakpoints and inspecting memory and CPU states
@@ -23,7 +25,7 @@ Options:
 ### Prerequisites
 
 - CMake
-- Dependencies to build SDL3 from source
+- Linux: [Build Dependencies for SDL3](https://wiki.libsdl.org/SDL3/README-linux#build-dependencies)
 
 ### Run
 
