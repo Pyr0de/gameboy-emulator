@@ -74,15 +74,14 @@ fn gameboy_emulator(
                 break;
             }
 
-            // Calculation: Clock speed = 4194304 Hz
-            //              M-Cycles/sec = 4194304/4 = 1048576 M-cycles/sec
-            //              1 M-cycles takes 1/1048576 sec = 0.000000954 sec
-            //                                             = 954 ns
-
             if debugger.breakpoints.contains(&cpu.registers.pc) {
                 debugger.execution_state = debugger::ExecutionState::Pause;
             }
 
+            // Calculation: Clock speed = 4194304 Hz
+            //              M-Cycles/sec = 4194304/4 = 1048576 M-cycles/sec
+            //              1 M-cycles takes 1/1048576 sec = 0.000000954 sec
+            //                                             = 954 ns
             Duration::from_nanos(954 * cycles as u64).saturating_sub(time_taken)
         } else {
             sdl.to_sleep()
