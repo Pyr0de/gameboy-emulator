@@ -93,7 +93,7 @@ fn gameboy_emulator(
 
         // Update graphics
         let Some(mut token) = sdl.update_graphics(debugger) else {
-            continue
+            continue;
         };
         let sdl = &mut token.0;
 

@@ -173,7 +173,7 @@ impl<'a> Graphics<'a> {
     pub fn do_cycles(&mut self, cycles: u8, interrupt: &mut Interrupt) -> Result<()> {
         if !self.lcd_control.get(LcdControl::Enable) {
             self.y_coord = 0;
-            return Ok(())
+            return Ok(());
         }
 
         let (old_x, old_y) = (self.x_coord, self.y_coord);
