@@ -171,9 +171,14 @@ impl<'a> Graphics<'a> {
     /// Updating each line at once after 172 dots in Mode 3 (ignoring penalties)
     /// TODO: Penalties and update each dot instead of whole line
     pub fn do_cycles(&mut self, cycles: u8, interrupt: &mut Interrupt) -> Result<()> {
+        if !self.lcd_control.get(LcdControl::Enable) {
+            self.y_coord = 0;
+            return Ok(())
+        }
+
         let (old_x, old_y) = (self.x_coord, self.y_coord);
 
-        self.x_coord += cycles as u16;
+        self.x_coord += cycles as u16 * 4;
         if self.x_coord > 456 {
             self.x_coord %= 456;
             self.y_coord += 1;
