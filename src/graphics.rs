@@ -97,13 +97,13 @@ impl<'a> Graphics<'a> {
     pub(crate) fn new() -> Self {
         Graphics {
             vram: [0; 0x2000],
-            lcd_control: BitFlag::default(),
+            lcd_control: BitFlag::from(0x91),
             scroll_x: 0,
             scroll_y: 0,
-            y_coord: 0,
+            y_coord: 0x91,
             x_coord: 0,
             y_comp: 0,
-            lcd_status: BitFlag::default(),
+            lcd_status: BitFlag::from(0x81),
             textures: Vec::new(),
             changed_textures: Vec::new(),
             bg_id: None,
