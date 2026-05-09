@@ -9,6 +9,12 @@ pub struct BitFlag<T, U> {
     _phantom: PhantomData<U>,
 }
 
+impl<T, U> From<T> for BitFlag<T, U> {
+    fn from(value: T) -> Self {
+        BitFlag { value, _phantom: PhantomData }
+    }
+}
+
 impl<T, U> Default for BitFlag<T, U>
 where
     T: Default,
