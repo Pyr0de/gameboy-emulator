@@ -92,14 +92,14 @@ fn gameboy_emulator(
         cpu.memory.vram.update_textures()?;
 
         // Update graphics
-        if let Some(mut token) = sdl.update_graphics(debugger) {
-            let sdl = &mut token.0;
+        let Some(mut token) = sdl.update_graphics(debugger) else {
+            continue
+        };
+        let sdl = &mut token.0;
 
-            cpu.memory.vram.display_screen(&mut sdl.canvas)?;
+        cpu.memory.vram.display_screen(&mut sdl.canvas)?;
 
-            if !args.debug {
-                continue;
-            }
+        if args.debug {
             let ui = debugger.imgui_context.new_frame();
 
             let reset = Debugger::display_execution_debugger(
