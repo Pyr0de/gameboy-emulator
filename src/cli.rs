@@ -3,31 +3,43 @@ use std::path::PathBuf;
 use clap::{CommandFactory, Parser, error::ErrorKind};
 
 #[derive(Parser, Debug)]
-pub(crate) struct Args {
+struct ArgsCli {
     /// Rom file path
-    pub file: PathBuf,
+    pub file: Option<PathBuf>,
 
     #[arg(long)]
     pub debug: bool,
 }
 
+#[derive(Debug)]
+pub struct Args {
+    pub file: PathBuf,
+
+    pub debug: bool,
+}
+
 impl Args {
-    pub fn new() -> Self {
-        let args = Self::parse();
-        if !args.file.exists() {
-            let mut cmd = Args::command();
+    pub fn new() -> Option<Self> {
+        let args = ArgsCli::parse();
+
+        let file = args.file?;
+        if !file.exists() {
+            let mut cmd = ArgsCli::command();
             cmd.error(
                 ErrorKind::ValueValidation,
-                format!("file `{}` doesn't exist", args.file.to_str().unwrap()),
+                format!("file `{}` doesn't exist", file.to_str().unwrap()),
             )
             .exit();
         }
 
-        args
+        Some(Args {
+            file,
+            debug: args.debug,
+        })
     }
 }
 
 #[test]
 fn verify_app() {
-    Args::command().debug_assert();
+    ArgsCli::command().debug_assert();
 }

@@ -134,7 +134,11 @@ fn gameboy_emulator(
 }
 
 fn main() {
-    let args = Args::new();
+    let args = match Args::new() {
+        Some(a) => a,
+        None => exit(1),
+    };
+
     let debugger_str = if args.debug { " (Debug)" } else { "" };
     let window_name = format!(
         "Emulator{}: {}",
