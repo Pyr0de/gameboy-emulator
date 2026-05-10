@@ -11,12 +11,16 @@ mod timer;
 mod utils;
 
 use std::{
+    cell::RefCell,
+    path::PathBuf,
     process::exit,
+    rc::Rc,
     thread::sleep,
     time::{Duration, Instant},
 };
 
-use anyhow::Error;
+use anyhow::{Error, bail};
+use sdl3::dialog::{DialogCallback, show_open_file_dialog};
 
 use crate::{
     cli::Args,
@@ -134,9 +138,13 @@ fn gameboy_emulator(
 }
 
 fn main() {
+    let mut sdl = SdlInstance::new("Emulator", 1600, 900).expect("Error Initializing SDL");
+    let texture_creator = sdl.canvas.texture_creator();
+    let mut debugger = Debugger::new(&texture_creator).expect("Error Initializing Imgui");
+
     let args = match Args::new() {
-        Some(a) => a,
-        None => exit(1),
+        Some(args) => args,
+        None => show_arguments_gui(&mut sdl, &mut debugger).unwrap(),
     };
 
     let debugger_str = if args.debug { " (Debug)" } else { "" };
@@ -145,10 +153,8 @@ fn main() {
         debugger_str,
         args.file.to_str().unwrap_or("")
     );
+    sdl.canvas.window_mut().set_title(&window_name).unwrap();
 
-    let mut sdl = SdlInstance::new(&window_name, 1600, 900).expect("Error Initializing SDL");
-    let texture_creator = sdl.canvas.texture_creator();
-    let mut debugger = Debugger::new(&texture_creator).expect("Error Initializing Imgui");
     if !args.debug {
         debugger.execution_state = debugger::ExecutionState::Execute;
     }
@@ -164,5 +170,68 @@ fn main() {
             }
             _ => {}
         }
+    }
+}
+
+fn show_arguments_gui(sdl: &mut SdlInstance, debugger: &mut Debugger) -> anyhow::Result<Args> {
+    let file = Rc::new(RefCell::new(None::<PathBuf>));
+    let mut debug = false;
+
+    let mut running = true;
+
+    while running {
+        if sdl.handle_event(debugger) {
+            exit(0);
+        }
+        let Some(mut token) = sdl.update_graphics(debugger) else {
+            continue;
+        };
+        let sdl = &mut token.0;
+        let ui = debugger.imgui_context.new_frame();
+
+        ui.window("Gameboy Emulator")
+            .size([300., 300.], imgui::Condition::FirstUseEver)
+            .build(|| {
+                if ui.button("Select ROM File") {
+                    let file_ref = Rc::clone(&file);
+                    let file_dialog_callback: DialogCallback = Box::new(move |files, _| {
+                        let files = match files {
+                            Ok(f) => f,
+                            Err(e) => {
+                                eprintln!("{e:?}");
+                                return;
+                            }
+                        };
+                        let Some(path) = files.first().filter(|f| f.exists()) else {
+                            eprintln!("No valid path found");
+                            return;
+                        };
+
+                        *file_ref.borrow_mut() = Some(PathBuf::from(path));
+                    });
+                    show_open_file_dialog(&[], None::<String>, false, None, file_dialog_callback)
+                        .unwrap();
+                }
+
+                if let Some(rom_path) = file.borrow().as_ref() {
+                    ui.same_line();
+                    ui.text(format!("{}", rom_path.to_string_lossy()));
+                }
+
+                ui.checkbox("debug", &mut debug);
+
+                if ui.button("Load ROM") {
+                    running = false;
+                }
+            });
+
+        debugger.render(&mut sdl.canvas, &Vec::new())?;
+    }
+    match file.borrow().as_ref() {
+        Some(file) => Ok(Args {
+            file: file.clone(),
+            debug,
+        }),
+        None => bail!("No file found"),
     }
 }
